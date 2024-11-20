@@ -306,8 +306,8 @@ export default class Autocomplete {
     const listStyle = {
       position: 'absolute',
       top: `${triggerRect.y + offsetHeight + window.scrollY - containerRect.y}px`,
-      left: `${triggerRect.x + window.scrollX - containerRect.x}px`,
-      width: `${offsetWidth + 1}px`,
+      left: `${triggerRect.x + window.scrollX - containerRect.x + 2}px`,
+      width: `${offsetWidth}px`,
     }
     Object.assign(this.list.style, listStyle)
   }

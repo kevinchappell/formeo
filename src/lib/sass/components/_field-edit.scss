@@ -71,7 +71,6 @@
     :not(.control-count-1) & {
       &:last-child {
         border-radius: var.$input-border-radius 0 0 var.$input-border-radius;
-        margin-right: -1px;
         display: none;
       }
 
@@ -118,7 +117,7 @@
 
   .prop-inputs,
   .prop-controls {
-    transition: width 150ms;
+    transition: width 150ms, display 150ms;
     will-change: width;
 
     .f-addon,
@@ -131,11 +130,6 @@
       &:focus {
         z-index: 1;
       }
-    }
-
-    [class^="condition-"] + select,
-    select + [class^="condition-"] {
-      margin-left: -1px;
     }
   }
 
@@ -169,38 +163,51 @@
 .f-condition-row {
   display: flex;
   width: 100%;
-  margin-top: -1px;
+
   border: 1px solid color.$gray-lighter;
+  margin-top: -1px;
+  overflow: hidden;
+
+  &:first-child {
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+  }
+  &:last-child {
+    border-bottom-left-radius: 4px;
+    border-bottom-right-radius: 4px;
+  }
+
+  > * {
+    height: 100%;
+    box-shadow: 0 0 0 1px color.$gray-lighter;
+  }
+
   input,
   select,
   [contenteditable] {
-    border-width: 0;
-    border-radius: 0;
     width: inherit;
-    box-shadow: 0 0 0 1px color.$gray-lighter;
+    background-color: color.$white;
+    border: 0 none;
+    border-radius: 0;
     &:focus {
-      box-shadow: 0 0 0 1px color.$input-focus;
+      box-shadow: 0 0 0 1px color.$input-focus inset;
     }
   }
   &:first-child {
+    border-top-left-radius: var.$input-border-radius;
+    border-top-right-radius: var.$input-border-radius;
     input:last-child,
     select:last-child {
       border-top-right-radius: var.$input-border-radius;
     }
   }
   &:last-child {
+    border-bottom-left-radius: var.$input-border-radius;
+    border-bottom-right-radius: var.$input-border-radius;
     input:last-child,
     select:last-child {
       border-bottom-right-radius: var.$input-border-radius;
     }
-  }
-  &:first-child {
-    border-top-left-radius: var.$input-border-radius;
-    border-top-right-radius: var.$input-border-radius;
-  }
-  &:last-child {
-    border-bottom-left-radius: var.$input-border-radius;
-    border-bottom-right-radius: var.$input-border-radius;
   }
 
   .condition-logical {
@@ -216,11 +223,18 @@
 
   [class^="condition-"] {
     max-width: 100%;
-    transition: max-width var.$animation-speed-base;
-    will-change: max-width;
+    transition: max-width var.$animation-speed-base,
+      display var.$animation-speed-base;
+    will-change: max-width, display;
   }
 
   &.if-condition-row {
+    .condition-target {
+      input {
+        border-top-right-radius: mixins.space();
+        border-bottom-right-radius: 0;
+      }
+    }
     &.condition-sourceProperty-isVisible,
     &.condition-sourceProperty-isNotVisible {
       .condition-comparison,
@@ -274,12 +288,12 @@
   label.condition-label {
     display: inline-flex;
     flex: 0 0 auto;
-    box-shadow: 0 0 0 1px color.$gray-lighter;
     align-items: center;
     padding: mixins.space();
     border-right: 0;
     text-transform: uppercase;
-    color: color.$gray-light;
+    color: color.$gray-dark;
+    background-color: color.$white;
     &.if-condition-label {
       border-top-left-radius: var.$input-border-radius;
       border-bottom-left-radius: 0;
@@ -369,11 +383,9 @@
     display: flex;
     align-items: center;
     flex: 0;
-    &:first-child {
-      margin-right: -1px;
-    }
-    &:last-child {
-      margin-left: -1px;
+
+    input {
+      margin: 0;
     }
   }
 

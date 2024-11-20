@@ -27,7 +27,11 @@ export const editorOptions = {
   sessionStorage: true,
   editPanelOrder: ['attrs', 'options'],
   // controlOnLeft: true,
-  // onLoad: () => {},
+  onLoad: () => {
+    const firstField = document.querySelector('.formeo-field')
+    firstField.querySelector('.item-edit-toggle').click()
+    firstField.querySelector('.panel-labels').children[0].lastChild.click()
+  },
 }
 
 export const renderOptions = {

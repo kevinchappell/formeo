@@ -50,7 +50,7 @@ export class Fields extends ComponentData {
         let hasConditions = true
         if (conditions.length === 1) {
           const [firstCondition] = conditions
-          hasConditions = Boolean(firstCondition.if[0].source && firstCondition.then[0].target)
+          hasConditions = Boolean(firstCondition.if[0].source)
         }
         if (hasConditions) {
           data.conditions = conditions

@@ -331,6 +331,9 @@ export default class EditPanelItem {
       const conditionRow = target.closest('.f-condition-row')
       const regex = new RegExp(`${target.className}(?:\\S?)+`, 'gm')
       conditionRow.className = conditionRow.className.replace(regex, '')
+      if (target.tagName === 'SELECT') {
+        conditionRow.classList.add([target.className, target.value].filter(Boolean).join('-'))
+      }
 
       const evtData = {
         dataPath,
