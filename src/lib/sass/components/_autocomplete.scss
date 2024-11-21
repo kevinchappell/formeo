@@ -1,8 +1,8 @@
 @use "sass:color" as sass-color;
 @use "../base/mixins";
 
-@use '../base/colors' as color;
-@use '../base/variables' as var;
+@use "../base/colors" as color;
+@use "../base/variables" as var;
 
 .f-autocomplete-list {
   background-color: color.$white;
@@ -11,8 +11,6 @@
   padding: 0;
   position: absolute;
   z-index: 20;
-  max-height: 200px;
-  overflow-y: auto;
   width: 100%;
   margin: 0 -1px;
   border: 1px solid color.$gray-light;
@@ -20,6 +18,7 @@
   box-shadow: 0 1px mixins.space() 0 rgba(0, 0, 0, 0.5);
 
   li {
+    position: relative;
     border: 1px solid color.$gray-light;
     display: none;
     cursor: default;
@@ -36,11 +35,21 @@
     &:hover {
       background-color: sass-color.adjust(color.$brand-info, $lightness: 16.6%);
     }
+
+    &:has(.options-list):hover .options-list {
+      display: block;
+    }
   }
 
   .component-type {
     color: color.$gray;
     font-style: italic;
     font-size: 0.75em;
+  }
+
+  &.options-list {
+    left: 100%;
+    top: 0;
+    width:75%;
   }
 }

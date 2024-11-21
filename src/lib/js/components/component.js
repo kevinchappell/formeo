@@ -27,7 +27,8 @@ export default class Component extends Data {
     this.name = name
     this.config = Components[`${this.name}s`].config
     merge(this.config, data.config)
-    this.dataPath = `${this.name}s.${this.id}.`
+    this.address = `${this.name}s.${this.id}`
+    this.dataPath = `${this.address}.`
     this.observer = new window.MutationObserver(this.mutationHandler)
     this.render = render
   }
@@ -572,7 +573,9 @@ export default class Component extends Data {
       return path
     }
 
-    return val ? component.set(FIELD_INPUT_PROPERTY_MAP[property], val) : component.get(FIELD_INPUT_PROPERTY_MAP[property])
+    return val
+      ? component.set(FIELD_INPUT_PROPERTY_MAP[property], val)
+      : component.get(FIELD_INPUT_PROPERTY_MAP[property])
   }
 
   /**

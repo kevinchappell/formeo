@@ -7,7 +7,9 @@ import { toTitleCase } from '../common/utils/string.mjs'
 import { isAddress } from '../common/utils/index.mjs'
 
 const BASE_NAME = 'f-autocomplete'
-const LIST_ITEM_CLASSNAME = `${BASE_NAME}-list-item`
+const DISPLAY_FIELD_CLASSNAME = `${BASE_NAME}-display-field`
+const LIST_CLASSNAME = `${BASE_NAME}-list`
+const LIST_ITEM_CLASSNAME = `${LIST_CLASSNAME}-item`
 const HIGHLIGHT_CLASSNAME = 'highlight-component'
 
 /**
@@ -77,9 +79,30 @@ const makeListItem = ({ value, textLabel, htmlLabel }, autocomplete) => {
         autocomplete.removeHighlight()
         autocomplete.highlightComponent(target)
       },
+      mouseleave: ({ target }) => {
+        target = realTarget(target)
+        autocomplete.removeHighlight()
+      },
     },
   }
   return dom.create(optionConfig)
+}
+
+const makeComponentOptionsList = (component, autocomplete) => {
+  const items = component.data.options.map((option, index) => {
+    const value = `${component.address}.options.${index}`
+    const textLabel = option.label
+    const htmlLabel = option.label
+    return makeListItem({ value, textLabel, htmlLabel }, autocomplete)
+  })
+
+  const list = dom.create({
+    tag: 'ul',
+    attrs: { className: [LIST_CLASSNAME, 'options-list'] },
+    children: items,
+  })
+
+  return list
 }
 
 /**
@@ -92,9 +115,6 @@ export const componentOptions = autocomplete => {
   const labels = []
   const flatList = Components.flatList()
   const options = Object.entries(flatList).reduce((acc, [value, component]) => {
-    if (component.isCheckbox) {
-      console.log('component', component.data.options)
-    }
     const label = getComponentLabel(component)
     if (label) {
       const typeConfig = {
@@ -113,6 +133,11 @@ export const componentOptions = autocomplete => {
       }
       const htmlLabel = [`${label} `, countConfig, typeConfig]
       const textLabel = [label, count].join(' ').trim()
+
+      if (component.isCheckbox) {
+        const componentOptionsList = makeComponentOptionsList(component, autocomplete)
+        htmlLabel.push(componentOptionsList)
+      }
       const optionData = makeOptionData({ value, textLabel, htmlLabel, selectedId })
 
       acc.push(makeListItem(optionData, autocomplete))
@@ -258,7 +283,7 @@ export default class Autocomplete {
       action: autoCompleteInputActions,
       attrs: {
         type: 'text',
-        className: `${BASE_NAME}-display-field`,
+        className: DISPLAY_FIELD_CLASSNAME,
         value: this.label || this.value,
         placeholder: i18n.get(`${this.i18nKey}.${this.key}.placeholder`),
       },
@@ -270,7 +295,7 @@ export default class Autocomplete {
 
     this.list = dom.create({
       tag: 'ul',
-      attrs: { className: `${BASE_NAME}-list` },
+      attrs: { className: LIST_CLASSNAME },
     })
 
     const clearButton = {
@@ -325,7 +350,7 @@ export default class Autocomplete {
     const triggerRect = this.displayField.getBoundingClientRect()
     const listStyle = {
       position: 'absolute',
-      top: `${triggerRect.y + offsetHeight + window.scrollY - containerRect.y}px`,
+      top: `${triggerRect.y + offsetHeight - containerRect.y}px`,
       left: `${triggerRect.x + window.scrollX - containerRect.x + 2}px`,
       width: `${offsetWidth}px`,
     }
@@ -411,7 +436,7 @@ export default class Autocomplete {
       } = option
       option.classList.remove('active-option')
 
-      if (value) {
+      if (isAddress(value)) {
         const component = Components.getAddress(value)
         component.dom?.classList.remove(HIGHLIGHT_CLASSNAME)
       }
@@ -440,9 +465,17 @@ export default class Autocomplete {
       dataset: { value },
     } = option
 
-    if (value) {
-      const component = Components.getAddress(value)
-      component.dom?.classList.add(HIGHLIGHT_CLASSNAME)
+    if (isAddress(value)) {
+      const isOptions = value.includes('.options.')
+      const [componentAddress, optionIndex] = isOptions ? value.split('.options.') : [value, null]
+      const component = Components.getAddress(componentAddress)
+      if (component.dom) {
+        component.dom.classList.add(HIGHLIGHT_CLASSNAME)
+        if (optionIndex) {
+          const checkboxes = component.dom.querySelectorAll('.field-preview .f-checkbox')
+          checkboxes[optionIndex]?.classList.add(HIGHLIGHT_CLASSNAME)
+        }
+      }
     }
   }
 

@@ -16,6 +16,7 @@ $remove-bg: rgba($brand-error, 0.25) !default;
 $row-outline-color: rgb(239, 71, 111);
 $column-outline-color: rgb(6, 214, 160);
 $field-outline-color: rgb(38, 84, 124);
+$option-outline-color: rgb(163, 0, 128);
 $row-highlight-color: color.adjust($row-outline-color, $lightness: 36%) !default;
 $column-highlight-color: color.adjust($column-outline-color, $lightness: 50%) !default;
 $field-highlight-color: color.adjust($field-outline-color, $lightness: 50%) !default;

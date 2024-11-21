@@ -9,6 +9,10 @@
   margin: 0;
   will-change: box-shadow;
 
+  &.highlight-component {
+    box-shadow: 0 0 mixins.space() 2px color.$field-outline-color;
+  }
+
   &:last-child {
     border-bottom-right-radius: var.$input-border-radius;
     border-bottom-left-radius: var.$input-border-radius;
@@ -152,5 +156,9 @@
 .field-preview {
   p {
     white-space: normal;
+  }
+
+  .f-checkbox.highlight-component {
+    box-shadow: 0 0 2px 1px color.$option-outline-color inset;
   }
 }
