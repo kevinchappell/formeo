@@ -6,6 +6,8 @@ import {
   ANIMATION_SPEED_SLOW,
   ANIMATION_SPEED_BASE,
   DEFAULT_FORMDATA,
+  INTERNAL_COMPONENT_INDEX_TYPES,
+  COMPONENT_INDEX_TYPE_MAP,
 } from '../../constants.js'
 import mergeWith from 'lodash/mergeWith.js'
 
@@ -55,10 +57,13 @@ export const remove = (arr, val) => {
  * @param  {String} cls class
  * @return {Object}     DOM Element
  */
-export const closest = (el, cls) => {
+export const closest = (element, cls) => {
   const className = cls.replace('.', '')
-  while ((el = el.parentElement) && !el.classList.contains(className));
-  return el
+  let current = element.parentElement
+  while (current && !current.classList.contains(className)) {
+    current = current.parentElement
+  }
+  return current
 }
 
 /**
@@ -68,7 +73,12 @@ export const closest = (el, cls) => {
  * @return {Object}     DOM Element
  */
 export const closestFtype = el => {
-  while ((el = el.parentElement) && !componentType(el));
+  while (el) {
+    el = el.parentElement
+    if (!el || componentType(el)) {
+      break
+    }
+  }
   return el
 }
 
@@ -256,17 +266,46 @@ export const escapeHtml = html => {
   return escapeElement.innerHTML
 }
 
+const componentIndexRegex = new RegExp(`^${COMPONENT_INDEX_TYPES.join('|')}.`)
+
 /**
  * Test if a string is a formeo address
  * @param {String} str
  */
-export const isAddress = str => COMPONENT_INDEX_TYPES.some(indexType => new RegExp(`^${indexType}.`).test(str))
+export const isAddress = str => {
+  return componentIndexRegex.test(str)
+}
 
 /**
  * Test if a string is an external address
  * @param {String} str
  */
-export const isExternalAddress = str => str.startsWith('external')
+export const isExternalAddress = str => {
+  return /^external./.test(str)
+}
+
+const internalComponentIndexRegex = new RegExp(`^${INTERNAL_COMPONENT_INDEX_TYPES.join('|')}.`)
+
+/**
+ * Checks if a given string is an internal address.
+ *
+ * This function uses a regular expression to test if the input string matches
+ * any of the internal component index types defined in the `INTERNAL_COMPONENT_INDEX_TYPES` array.
+ *
+ * @param {string} str - The string to be tested.
+ * @returns {boolean} - Returns `true` if the string matches an internal address pattern, otherwise `false`.
+ */
+export const isInternalAddress = str => {
+  return internalComponentIndexRegex.test(str)
+}
+
+/**
+ * Retrieves the component type based on the provided index type.
+ *
+ * @param {string} indexType - The type of the index to look up.
+ * @returns {string|undefined} The component type corresponding to the index type, or undefined if not found.
+ */
+export const getIndexComponentType = indexType => COMPONENT_INDEX_TYPE_MAP.get(indexType)
 
 /**
  * Tests if key is for a boolean property

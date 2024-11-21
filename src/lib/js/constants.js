@@ -36,9 +36,21 @@ export const CHILD_CLASSNAME_MAP = new Map([
   [COLUMN_CLASSNAME, FIELD_CLASSNAME],
 ])
 
-export const COMPONENT_INDEX_TYPES = ['external', 'stages', 'rows', 'columns', 'fields']
+export const INTERNAL_COMPONENT_TYPES = ['stage', 'row', 'column', 'field']
+export const INTERNAL_COMPONENT_INDEX_TYPES = INTERNAL_COMPONENT_TYPES.map(type => `${type}s`)
+export const INTERNAL_COMPONENT_INDEX_TYPE_MAP = new Map(
+  INTERNAL_COMPONENT_INDEX_TYPES.map((type, index) => [type, INTERNAL_COMPONENT_TYPES[index]]),
+)
+export const COMPONENT_TYPES = ['external', ...INTERNAL_COMPONENT_TYPES]
+export const COMPONENT_INDEX_TYPES = ['external', ...INTERNAL_COMPONENT_INDEX_TYPES]
+export const COMPONENT_INDEX_TYPE_MAP = new Map(
+  COMPONENT_INDEX_TYPES.map((type, index) => [type, COMPONENT_TYPES[index]]),
+)
 
-export const COMPONENT_TYPES = ['stage', 'row', 'column', 'field'].reduce((acc, type) => ({ ...acc, [type]: type }), {})
+export const COMPONENT_TYPE_MAP = COMPONENT_TYPES.reduce((acc, type) => {
+  acc[type] = type
+  return acc
+}, {})
 
 export const COMPONENT_TYPE_CONFIGS = [
   { name: 'controls', className: CONTROL_GROUP_CLASSNAME },
@@ -57,10 +69,10 @@ export const COMPONENT_TYPE_CLASSNAMES = {
 }
 
 export const COMPONENT_TYPE_CLASSNAMES_LOOKUP = Object.entries(COMPONENT_TYPE_CLASSNAMES).reduce(
-  (acc, [type, className]) => ({
-    ...acc,
-    [className]: type,
-  }),
+  (acc, [type, className]) => {
+    acc[className] = type
+    return acc
+  },
   {},
 )
 
@@ -164,9 +176,13 @@ export const CONDITION_INPUT_ORDER = [
   'value',
 ]
 
-export const FIELD_PROPERTY_MAP = {
-  value: 'attrs.value',
+export const FIELD_CHECKBOX_PROPERTY_MAP = {
   isChecked: 'attrs.checked',
+  ...visiblityConfigs,
+}
+
+export const FIELD_INPUT_PROPERTY_MAP = {
+  value: 'attrs.value',
   ...visiblityConfigs,
 }
 
@@ -174,7 +190,7 @@ export const OPERATORS = {
   comparison: COMPARISON_OPERATORS,
   assignment: ASSIGNMENT_OPERATORS,
   logical: LOGICAL_OPERATORS,
-  property: FIELD_PROPERTY_MAP,
+  property: FIELD_INPUT_PROPERTY_MAP,
 }
 
 export const CONDITION_TEMPLATE = () => ({

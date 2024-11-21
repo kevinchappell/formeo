@@ -355,4 +355,8 @@ export default class Field extends Component {
     const lockedAttrs = propKind.locked.concat(this.get(`config.locked${toTitleCase(kind)}`))
     return lockedAttrs.includes(propName)
   }
+
+  get isCheckbox() {
+    return this.get('config.controlId') === 'checkbox'
+  }
 }

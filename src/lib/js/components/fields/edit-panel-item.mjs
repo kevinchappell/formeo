@@ -2,22 +2,38 @@ import i18n from '@draggable/i18n'
 import { orderObjectsBy, indexOfNode } from '../../common/helpers.mjs'
 import dom from '../../common/dom.js'
 import animate from '../../common/animation.js'
-import { CONDITION_INPUT_ORDER, FIELD_PROPERTY_MAP, OPERATORS, ANIMATION_SPEED_BASE } from '../../constants.js'
+import {
+  CONDITION_INPUT_ORDER,
+  FIELD_INPUT_PROPERTY_MAP,
+  OPERATORS,
+  ANIMATION_SPEED_BASE,
+  INTERNAL_COMPONENT_INDEX_TYPES,
+} from '../../constants.js'
 import events from '../../common/events.js'
 import Components from '../index.js'
 import Autocomplete from '../autocomplete.mjs'
-import { isExternalAddress, isAddress, isBoolKey } from '../../common/utils/index.mjs'
+import {
+  isExternalAddress,
+  isAddress,
+  isBoolKey,
+  getIndexComponentType,
+  isInternalAddress,
+} from '../../common/utils/index.mjs'
 import { toTitleCase } from '../../common/utils/string.mjs'
 
 const optionDataCache = {}
 
+const optionDataMap = {
+  'field.property': FIELD_INPUT_PROPERTY_MAP,
+  'field.input.property': FIELD_INPUT_PROPERTY_MAP,
+  'field.checkbox.property': FIELD_INPUT_PROPERTY_MAP,
+  ...OPERATORS,
+}
+
+const componentIndexRegex = new RegExp(`^(${INTERNAL_COMPONENT_INDEX_TYPES.join('|')}).`)
+
 const getOptionData = key => {
   const isExternal = isExternalAddress(key)
-  const optionDataMap = {
-    'field.property': FIELD_PROPERTY_MAP,
-    ...OPERATORS,
-  }
-
   const externalOptionData = address => Components.getAddress(address).getData()
 
   const data = isExternal ? externalOptionData(key) : optionDataMap[key]
@@ -259,11 +275,29 @@ export default class EditPanelItem {
         'condition-source',
         field => {
           const foundFields = findFields('condition-sourceProperty')
-          const sourceProperty = foundFields[0]
-          const key = isExternalAddress(field.value) ? field.value : 'field.property'
-          const externalProperties = createOptions(key, sourceProperty.value)
-          addOptions(sourceProperty, externalProperties)
-          debugger
+          const [sourceProperty] = foundFields
+          // can field be checked
+          // const isCheckable = field.value && !isExternalAddress(field.value)
+          let key = field.value
+          // let valueType = null
+          if (isInternalAddress(field.value)) {
+            const matches = field.value.match(componentIndexRegex)
+
+            if (matches?.[1]) {
+              console.log(field.valueComponent?.isCheckbox)
+              const componentType = getIndexComponentType(matches[1])
+              key = `${componentType}.property`
+              // if (componentType === 'field' && field.valueComponent?.isCheckbox) {
+              //   key = 'field.property'
+              // }
+            }
+          }
+
+          // console.log(field.value, isAddress(field.value))
+
+          key = isExternalAddress(field.value) ? field.value : 'field.property'
+          const sourcePropertyOptions = createOptions(key, sourceProperty.value)
+          addOptions(sourceProperty, sourcePropertyOptions)
 
           if (field.value) {
             return showFields(foundFields)

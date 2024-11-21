@@ -271,9 +271,56 @@
   }
 }
 
-.f-autocomplete-display-field + .f-autocomplete-list {
-  &:focus {
-    z-index: 100;
+.condition-target,
+.condition-source {
+  input.f-autocomplete-display-field:placeholder-shown + span.clear-button {
+    display: none;
+  }
+
+  .clear-button {
+    position: absolute;
+    right: 2px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+
+    padding: mixins.space();
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    .svg-icon {
+      width: mixins.space(1) + mixins.space();
+      height: mixins.space(1) + mixins.space();
+      border-radius: 50%;
+      padding: 1px;
+      border: 1px solid color.$gray-dark;
+      fill: color.$gray-dark;
+    }
+
+    &:hover {
+      .svg-icon {
+        border: 1px solid color.$brand-error;
+        fill: color.$brand-error;
+      }
+    }
+
+    &:active {
+      .svg-icon {
+        background-color: color.$brand-error;
+        border: 1px solid color.$brand-error-dark;
+        fill: color.$white;
+      }
+    }
+  }
+}
+
+.f-autocomplete-display-field {
+  + .f-autocomplete-list {
+    &:focus {
+      z-index: 100;
+    }
   }
 }
 

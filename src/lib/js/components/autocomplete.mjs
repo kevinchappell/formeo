@@ -4,9 +4,11 @@ import dom from '../common/dom.js'
 import Components from './index.js'
 import { ANIMATION_SPEED_FAST, ANIMATION_SPEED_SLOW } from '../constants.js'
 import { toTitleCase } from '../common/utils/string.mjs'
+import { isAddress } from '../common/utils/index.mjs'
 
 const BASE_NAME = 'f-autocomplete'
-const HIGHLIGHT_CLASS_NAME = 'highlight-component'
+const LIST_ITEM_CLASSNAME = `${BASE_NAME}-list-item`
+const HIGHLIGHT_CLASSNAME = 'highlight-component'
 
 /**
  * Counts the number of occurences of a string in an array of strings
@@ -38,17 +40,46 @@ const getComponentLabel = ({ name, id, ...component }) => {
   return label || (name === 'external' && externalLabel(name, id))
 }
 
-const makeOption = ({ id, textLabel, htmlLabel, selectedId }) => {
-  const option = {
-    value: id,
-    textLabel,
-    htmlLabel,
-  }
-  if (id === selectedId) {
+const makeOptionData = ({ selectedId, ...option }) => {
+  if (option.value === selectedId) {
     option.selected = true
   }
 
   return option
+}
+
+const realTarget = target => {
+  if (!target.classList.contains(LIST_ITEM_CLASSNAME)) {
+    target = target.parentElement
+  }
+
+  return target
+}
+
+const makeListItem = ({ value, textLabel, htmlLabel }, autocomplete) => {
+  const optionConfig = {
+    tag: 'li',
+    children: htmlLabel,
+    dataset: {
+      value,
+      label: textLabel,
+    },
+    className: LIST_ITEM_CLASSNAME,
+    action: {
+      mousedown: ({ target }) => {
+        target = realTarget(target)
+        autocomplete.setValue(target)
+        autocomplete.selectOption(target)
+        autocomplete.hideList()
+      },
+      mouseover: ({ target }) => {
+        target = realTarget(target)
+        autocomplete.removeHighlight()
+        autocomplete.highlightComponent(target)
+      },
+    },
+  }
+  return dom.create(optionConfig)
 }
 
 /**
@@ -56,10 +87,14 @@ const makeOption = ({ id, textLabel, htmlLabel, selectedId }) => {
  * @param {String} selectedId option value
  * @return {Array} option config objects
  */
-export const componentOptions = selectedId => {
+export const componentOptions = autocomplete => {
+  const selectedId = autocomplete.value
   const labels = []
   const flatList = Components.flatList()
-  const options = Object.entries(flatList).map(([id, component]) => {
+  const options = Object.entries(flatList).reduce((acc, [value, component]) => {
+    if (component.isCheckbox) {
+      console.log('component', component.data.options)
+    }
     const label = getComponentLabel(component)
     if (label) {
       const typeConfig = {
@@ -78,11 +113,15 @@ export const componentOptions = selectedId => {
       }
       const htmlLabel = [`${label} `, countConfig, typeConfig]
       const textLabel = [label, count].join(' ').trim()
-      return makeOption({ id, textLabel, htmlLabel, selectedId })
-    }
-  })
+      const optionData = makeOptionData({ value, textLabel, htmlLabel, selectedId })
 
-  return options.filter(Boolean)
+      acc.push(makeListItem(optionData, autocomplete))
+    }
+
+    return acc
+  }, [])
+
+  return options
 }
 
 /**
@@ -106,6 +145,14 @@ export default class Autocomplete {
     this.i18nKey = i18nKey
 
     this.build()
+  }
+
+  get isAddress() {
+    return isAddress(this.value)
+  }
+
+  get valueComponent() {
+    return isAddress(this.value) && Components.getAddress(this.value)
   }
 
   /**
@@ -226,8 +273,15 @@ export default class Autocomplete {
       attrs: { className: `${BASE_NAME}-list` },
     })
 
+    const clearButton = {
+      tag: 'span',
+      content: dom.icon('remove'),
+      className: 'clear-button',
+      action: { click: () => this.clearValue() },
+    }
+
     this.dom = dom.create({
-      children: [this.displayField, this.hiddenField],
+      children: [this.displayField, clearButton, this.hiddenField],
       className: this.className,
       action: {
         onRender: element => {
@@ -248,7 +302,7 @@ export default class Autocomplete {
     let options = this.optionsCache
     const now = Date.now()
 
-    if (!options || now - this.lastCache > ANIMATION_SPEED_SLOW * 10) {
+    if (now - this.lastCache > ANIMATION_SPEED_SLOW * 5 || !options) {
       dom.empty(this.list)
       options = this.generateOptions()
       this.lastCache = now
@@ -260,41 +314,7 @@ export default class Autocomplete {
   }
 
   generateOptions() {
-    const options = componentOptions()
-    const realTarget = target => {
-      const targetClass = `${BASE_NAME}-list-item`
-      if (!target.classList.contains(targetClass)) {
-        target = target.parentElement
-      }
-      return target
-    }
-
-    this.optionsCache = options.map(optionData => {
-      const { value, textLabel, htmlLabel } = optionData
-      const optionConfig = {
-        tag: 'li',
-        children: htmlLabel,
-        dataset: {
-          value,
-          label: textLabel,
-        },
-        className: `${BASE_NAME}-list-item`,
-        action: {
-          mousedown: ({ target }) => {
-            target = realTarget(target)
-            this.setValue(target)
-            this.selectOption(target)
-            this.hideList()
-          },
-          mouseover: ({ target }) => {
-            target = realTarget(target)
-            this.removeHighlight()
-            this.highlightComponent(target)
-          },
-        },
-      }
-      return dom.create(optionConfig)
-    })
+    this.optionsCache = componentOptions(this)
 
     return this.optionsCache
   }
@@ -393,7 +413,7 @@ export default class Autocomplete {
 
       if (value) {
         const component = Components.getAddress(value)
-        component.dom?.classList.remove(HIGHLIGHT_CLASS_NAME)
+        component.dom?.classList.remove(HIGHLIGHT_CLASSNAME)
       }
     }
     if (selectedOption) {
@@ -406,9 +426,9 @@ export default class Autocomplete {
    * removes the highlight from
    */
   removeHighlight() {
-    const highlightedComponents = document.getElementsByClassName(HIGHLIGHT_CLASS_NAME)
+    const highlightedComponents = document.getElementsByClassName(HIGHLIGHT_CLASSNAME)
     for (const component of highlightedComponents) {
-      component.classList.remove(HIGHLIGHT_CLASS_NAME)
+      component.classList.remove(HIGHLIGHT_CLASSNAME)
     }
   }
 
@@ -422,7 +442,7 @@ export default class Autocomplete {
 
     if (value) {
       const component = Components.getAddress(value)
-      component.dom?.classList.add(HIGHLIGHT_CLASS_NAME)
+      component.dom?.classList.add(HIGHLIGHT_CLASSNAME)
     }
   }
 
@@ -432,11 +452,7 @@ export default class Autocomplete {
   clearValue() {
     this.selectOption(null)
 
-    this.displayField.value = ''
-    this.hiddenField.value = ''
-    this.value = ''
-
-    this.runEvent('onChange', { target: this.hiddenField })
+    this.setValue({ dataset: { label: '', value: '' } })
   }
 
   /**
@@ -446,9 +462,11 @@ export default class Autocomplete {
    */
   setValue(target) {
     const { label, value } = target.dataset
+    const trimmedValue = value.trim()
+
     this.displayField.value = label
-    this.hiddenField.value = value
-    this.value = value
+    this.hiddenField.value = trimmedValue
+    this.value = trimmedValue
 
     this.runEvent('onChange', { target: this.hiddenField })
   }

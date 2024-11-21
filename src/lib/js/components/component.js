@@ -6,11 +6,11 @@ import {
   CHILD_TYPE_MAP,
   PARENT_TYPE_MAP,
   ANIMATION_SPEED_BASE,
-  FIELD_PROPERTY_MAP,
+  FIELD_INPUT_PROPERTY_MAP,
   COMPONENT_TYPE_CLASSNAMES,
   COLUMN_CLASSNAME,
   CONTROL_GROUP_CLASSNAME,
-  COMPONENT_TYPES,
+  COMPONENT_TYPE_MAP,
 } from '../constants.js'
 import Components from './index.js'
 import Data from './data.js'
@@ -568,11 +568,11 @@ export default class Component extends Data {
     const component = this.getComponent(path)
     const property = component && splitPath.slice(2, splitPath.length).join('.')
 
-    if ([!component, !property, !FIELD_PROPERTY_MAP[property]].some(Boolean)) {
+    if ([!component, !property, !FIELD_INPUT_PROPERTY_MAP[property]].some(Boolean)) {
       return path
     }
 
-    return val ? component.set(FIELD_PROPERTY_MAP[property], val) : component.get(FIELD_PROPERTY_MAP[property])
+    return val ? component.set(FIELD_INPUT_PROPERTY_MAP[property], val) : component.get(FIELD_INPUT_PROPERTY_MAP[property])
   }
 
   /**
@@ -653,12 +653,12 @@ export default class Component extends Data {
     })
 
   get isRow() {
-    return this.name === COMPONENT_TYPES.row
+    return this.name === COMPONENT_TYPE_MAP.row
   }
   get isColumn() {
-    return this.name === COMPONENT_TYPES.column
+    return this.name === COMPONENT_TYPE_MAP.column
   }
   get isField() {
-    return this.name === COMPONENT_TYPES.field
+    return this.name === COMPONENT_TYPE_MAP.field
   }
 }
