@@ -9,6 +9,8 @@ import Autocomplete from '../autocomplete.mjs'
 import { isExternalAddress, isAddress, isBoolKey } from '../../common/utils/index.mjs'
 import { toTitleCase } from '../../common/utils/string.mjs'
 
+const optionDataCache = {}
+
 const getOptionData = key => {
   const isExternal = isExternalAddress(key)
   const optionDataMap = {
@@ -25,24 +27,30 @@ const getOptionData = key => {
   }, {})
 }
 
+const makeOptionDom = ({ fieldVal, key, value, selected }) => {
+  const option = {
+    tag: 'option',
+    content: i18n.get(`${fieldVal}.${key}`) || key.toLowerCase(),
+    attrs: {
+      value,
+    },
+  }
+
+  if (selected === value) {
+    option.attrs.selected = true
+  }
+
+  return dom.create(option)
+}
+
 const createOptions = (fieldVal, selected) => {
-  const data = getOptionData(fieldVal)
+  const data = optionDataCache[fieldVal] || getOptionData(fieldVal)
+
+  optionDataCache[fieldVal] = data
 
   return Object.entries(data).reduce((acc, [key, value]) => {
     if (key !== 'id') {
-      const option = {
-        tag: 'option',
-        content: i18n.get(`${fieldVal}.${key}`) || key.toLowerCase(),
-        attrs: {
-          value,
-        },
-      }
-
-      if (selected === value) {
-        option.attrs.selected = true
-      }
-
-      acc.push(dom.create(option))
+      acc.push(makeOptionDom({ fieldVal, key, value, selected }))
     }
     return acc
   }, [])
@@ -234,27 +242,17 @@ export default class EditPanelItem {
     }
     const hideFields = fields => {
       fields = Array.isArray(fields) ? fields : [fields]
-      const hideFieldsTimeout = setTimeout(() => {
-        fields.forEach(field => {
-          if (field.dom) {
-            field = field.dom
-          }
-          field.style.display = 'none'
-        })
-        clearTimeout(hideFieldsTimeout)
-      }, ANIMATION_SPEED_BASE)
+      for (const field of fields) {
+        const elem = field.dom || field
+        elem.style.display = 'none'
+      }
     }
     const showFields = fields => {
       fields = Array.isArray(fields) ? fields : [fields]
-      const showFieldsTimeout = setTimeout(() => {
-        fields.forEach(field => {
-          if (field.dom) {
-            field = field.dom
-          }
-          field.removeAttribute('style')
-        })
-        clearTimeout(showFieldsTimeout)
-      }, ANIMATION_SPEED_BASE)
+      for (const field of fields) {
+        const elem = field.dom || field
+        elem.removeAttribute('style')
+      }
     }
     const actions = new Map([
       [
@@ -265,6 +263,7 @@ export default class EditPanelItem {
           const key = isExternalAddress(field.value) ? field.value : 'field.property'
           const externalProperties = createOptions(key, sourceProperty.value)
           addOptions(sourceProperty, externalProperties)
+          debugger
 
           if (field.value) {
             return showFields(foundFields)
