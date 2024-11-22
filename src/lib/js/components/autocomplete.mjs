@@ -337,16 +337,17 @@ export default class Autocomplete {
       action: {
         onRender: element => {
           this.stage = element.closest('.formeo-stage')
-          const component = this.value && Components.getAddress(this.value)
-          this.label = component && getComponentLabel(component)
-          if (this.label) {
-            this.displayField.value = this.label
-          }
+          this.displayField.value = this.label
         },
       },
     })
 
     return this.dom
+  }
+
+  get label() {
+    const component = this.value && Components.getAddress(this.value)
+    return (component && getComponentLabel(component, `${this.i18nKey}.${this.key}`)) || this.value
   }
 
   updateOptions() {

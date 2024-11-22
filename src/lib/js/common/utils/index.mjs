@@ -102,15 +102,7 @@ export const unique = array => Array.from(new Set(array))
 
 // Get or generate a uuid
 export const uuid = elem => {
-  let id
-  if (elem) {
-    const { attrs = {} } = elem
-    id = attrs.id || elem.id || uuidv4()
-    elem.id = id
-  } else {
-    id = uuidv4()
-  }
-  return id
+  return elem?.attrs?.id || elem?.id || uuidv4()
 }
 
 /**

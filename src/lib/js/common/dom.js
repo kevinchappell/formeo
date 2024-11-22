@@ -347,12 +347,12 @@ class DOM {
 
     // Set element attributes
     for (const attr of Object.keys(attrs)) {
-      const name = h.safeAttrName(attr)
+      const safeAttrName = h.safeAttrName(attr)
 
       const value = this.processAttrValue(attrs[attr])
 
       if (value) {
-        element.setAttribute(name, value === true ? '' : value)
+        element.setAttribute(safeAttrName, value === true ? '' : value)
       }
     }
   }
