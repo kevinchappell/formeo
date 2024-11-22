@@ -29,6 +29,16 @@
     will-change: background-color;
     font-size: 0.85em;
 
+    &.component-type-row {
+      padding-left: mixins.space();
+    }
+    &.component-type-column {
+      padding-left: mixins.space(1);
+    }
+    &.component-type-field {
+      padding-left: mixins.space(2);
+    }
+
     &.active-option {
       &.component-type-stage {
         background-color: color.$stage-outline-color;

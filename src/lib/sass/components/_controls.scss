@@ -5,7 +5,10 @@
 
 .formeo-controls {
   width: 26%;
+  max-width: mixins.space(28);
   overflow: hidden;
+  container-type: inline-size;
+  container-name: controls;
 
   &.formeo-sticky {
     position: sticky;
@@ -213,9 +216,7 @@
 
       > button {
         max-width: 100%;
-        padding: 10px;
-        border-radius: 0;
-        line-height: 0;
+
         width: 100%;
         float: none;
         position: relative;
@@ -242,7 +243,6 @@
 
       .control-icon {
         display: inline-block;
-        margin-right: 10px;
       }
     }
   }
@@ -256,6 +256,32 @@
       .f-i-hash {
         padding: calc(var.$half-space/2);
       }
+    }
+  }
+}
+
+@container controls (max-width: 46px) {
+  .control-label {
+    display: none;
+  }
+
+  .form-actions {
+    button {
+      padding: 2px 0;
+      text-align: center;
+    }
+    button:first-child {
+      border-top-right-radius: var.$input-border-radius !important;
+      border-top-left-radius: var.$input-border-radius !important;
+      border-bottom-right-radius: 0 !important;
+      border-bottom-left-radius: 0 !important;
+    }
+
+    button:last-child {
+      border-bottom-left-radius: var.$input-border-radius !important;
+      border-bottom-right-radius: var.$input-border-radius !important;
+      border-top-right-radius: 0 !important;
+      border-top-left-radius: 0 !important;
     }
   }
 }
