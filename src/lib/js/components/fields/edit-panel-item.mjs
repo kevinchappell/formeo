@@ -276,24 +276,15 @@ export default class EditPanelItem {
         field => {
           const foundFields = findFields('condition-sourceProperty')
           const [sourceProperty] = foundFields
-          // can field be checked
-          // const isCheckable = field.value && !isExternalAddress(field.value)
           let key = field.value
-          // let valueType = null
           if (isInternalAddress(field.value)) {
             const matches = field.value.match(componentIndexRegex)
 
             if (matches?.[1]) {
-              console.log(field.valueComponent?.isCheckbox)
               const componentType = getIndexComponentType(matches[1])
               key = `${componentType}.property`
-              // if (componentType === 'field' && field.valueComponent?.isCheckbox) {
-              //   key = 'field.property'
-              // }
             }
           }
-
-          // console.log(field.value, isAddress(field.value))
 
           key = isExternalAddress(field.value) ? field.value : 'field.property'
           const sourcePropertyOptions = createOptions(key, sourceProperty.value)

@@ -211,8 +211,6 @@ export default class FormeoRenderer {
       component.addEventListener(
         listenerEvent,
         evt => {
-          console.log('component', evt)
-
           if (this.evaluateCondition(ifRest, evt)) {
             for (const thenCondition of thenConditions) {
               this.execResult(thenCondition, evt)

@@ -360,24 +360,18 @@ export class Controls {
    * @param {String} id of elements
    */
   addElement = id => {
-    // console.log(id, this.get(id))
-    try {
-      const {
-        meta: { group, id: metaId },
-        ...elementData
-      } = get(this.get(id), 'controlData')
+    const {
+      meta: { group, id: metaId },
+      ...elementData
+    } = get(this.get(id), 'controlData')
 
-      set(elementData, 'config.controlId', metaId)
+    set(elementData, 'config.controlId', metaId)
 
-      if (group === 'layout') {
-        return this.layoutTypes[metaId.replace('layout-', '')]()
-      }
-
-      return this.layoutTypes.field(elementData)
-    } catch (error) {
-      debugger
-      console.error(error)
+    if (group === 'layout') {
+      return this.layoutTypes[metaId.replace('layout-', '')]()
     }
+
+    return this.layoutTypes.field(elementData)
   }
 
   applyOptions = async (controlOptions = {}) => {
