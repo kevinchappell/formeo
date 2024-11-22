@@ -131,3 +131,9 @@ fieldset.formeo-row-wrap {
     padding-right: 0;
   }
 }
+
+.f-checkbox {
+  display: flex;
+  align-items: center;
+  gap: mixins.space();
+}

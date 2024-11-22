@@ -88,6 +88,11 @@
       display: none;
     }
   }
+
+
+  &.highlight-component {
+    box-shadow: 0 0 mixins.space() 2px color.$row-outline-color;
+  }
 }
 
 .row-moving {

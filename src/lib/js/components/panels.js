@@ -66,7 +66,7 @@ export default class Panels {
   toggleTabbedLayout = () => {
     this.getPanelDisplay()
     const isTabbed = this.isTabbed
-    this.panelsWrap.parentElement.classList.toggle('tabbed-panels', isTabbed)
+    this.panelsWrap.parentElement?.classList.toggle('tabbed-panels', isTabbed)
     if (isTabbed) {
       this.panelNav.removeAttribute('style')
     }

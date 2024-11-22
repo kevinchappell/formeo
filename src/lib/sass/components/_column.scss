@@ -130,6 +130,10 @@
       display: none;
     }
   }
+
+  &.highlight-component {
+    box-shadow: 0 0 mixins.space() 2px color.$column-outline-color;
+  }
 }
 
 // this is column styleing in the row edit window

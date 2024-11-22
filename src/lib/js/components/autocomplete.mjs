@@ -22,19 +22,45 @@ export const labelCount = (arr, label) => {
   return count > 1 ? `(${count})` : ''
 }
 
+const fieldLabelPaths = ['config.label', 'config.controlId']
+const rowLabelPaths = ['config.legend', 'name']
+const componentLabelPaths = [...fieldLabelPaths, ...rowLabelPaths]
+
+const resolveFieldLabel = field => {
+  return fieldLabelPaths.reduce((acc, path) => {
+    if (!acc) {
+      return field.get(path)
+    }
+    return acc
+  }, null)
+}
+
+const resolveComponentLabel = component => {
+  return (
+    componentLabelPaths.reduce((acc, path) => {
+      if (!acc) {
+        return component.get(path)
+      }
+      return acc
+    }, null) || toTitleCase(component.name)
+  )
+}
+
+const labelResolverMap = new Map([
+  ['if.condition.source', resolveFieldLabel],
+  ['if.condition.target', resolveFieldLabel],
+  ['then.condition.target', resolveComponentLabel],
+])
+
 /**
  * Find or generate a label for components and external data
  * @param {Object} Component
  * @return {String} component label
  */
-const getComponentLabel = ({ name, id, ...component }) => {
-  const labelPaths = ['config.label', 'config.controlId', 'meta.id', 'attrs.id']
-  const label = labelPaths.reduce((acc, cur) => {
-    if (!acc) {
-      return component.get(cur)
-    }
-    return acc
-  }, null)
+const getComponentLabel = ({ id, ...component }, key) => {
+  const { name } = component.name
+  const labelResolver = labelResolverMap.get(key)
+  const label = labelResolver(component)
 
   const externalLabel = (...externalAddress) =>
     i18n.get(externalAddress.join('.')) || toTitleCase(externalAddress.join(' '))
@@ -115,7 +141,7 @@ export const componentOptions = autocomplete => {
   const labels = []
   const flatList = Components.flatList()
   const options = Object.entries(flatList).reduce((acc, [value, component]) => {
-    const label = getComponentLabel(component)
+    const label = getComponentLabel(component, `${autocomplete.i18nKey}.${autocomplete.key}`)
     if (label) {
       const typeConfig = {
         tag: 'span',

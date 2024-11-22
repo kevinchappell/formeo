@@ -53,6 +53,10 @@
   @include mixins.breakpoint("phone-lrg") {
     width: calc(100% - 50px);
   }
+
+  &.highlight-component {
+    box-shadow: 0 0 mixins.space() 2px color.$black;
+  }
 }
 
 .editing-stage {
