@@ -158,6 +158,20 @@
       background-color: transparent;
     }
   }
+
+  &[popover] {
+    display: block;
+    height: auto;
+    width: 66.7%;
+    height: 66.7%;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    box-shadow: 0 0 mixins.space(3) 1px #000;
+    border: 1px solid #000;
+    border-radius: mixins.space(1);
+    z-index: 100;
+  }
 }
 
 .f-condition-row {
@@ -313,21 +327,6 @@
         fill: color.$white;
       }
     }
-  }
-}
-
-.f-autocomplete-display-field {
-  + .f-autocomplete-list {
-    &:focus {
-      z-index: 100;
-    }
-  }
-}
-
-[class$="-focused"] {
-  z-index: 1;
-  .f-autocomplete-list {
-    z-index: 100;
   }
 }
 
