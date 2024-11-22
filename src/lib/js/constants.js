@@ -79,17 +79,26 @@ export const COMPONENT_TYPE_CLASSNAMES_LOOKUP = Object.entries(COMPONENT_TYPE_CL
 export const COMPONENT_TYPE_CLASSNAMES_ARRAY = Object.values(COMPONENT_TYPE_CLASSNAMES)
 export const COMPONENT_TYPE_CLASSNAMES_REGEXP = new RegExp(`${COMPONENT_TYPE_CLASSNAMES_ARRAY.join('|')}`, 'g')
 
-const childTypeMap = COMPONENT_TYPE_CONFIGS.map(({ name }, index, arr) => {
-  const { name: childName } = arr[index + 1] || {}
-  return childName && [name, childName]
-}).filter(Boolean)
+const { childTypeMapVals, childTypeIndexMapVals } = COMPONENT_TYPE_CONFIGS.reduce(
+  (acc, { name }, index, arr) => {
+    const { name: childName } = arr[index + 1] || {}
+    if (childName) {
+      acc.childTypeMapVals.push([name, childName])
+      acc.childTypeIndexMapVals.push([`${name}s`, `${childName}s`])
+    }
 
-const parentTypeMap = childTypeMap
+    return acc
+  },
+  { childTypeMapVals: [], childTypeIndexMapVals: [] },
+)
+
+const parentTypeMap = childTypeMapVals
   .slice()
   .map(typeMap => typeMap.slice().reverse())
   .reverse()
 
-export const CHILD_TYPE_MAP = new Map(childTypeMap)
+export const CHILD_TYPE_MAP = new Map(childTypeMapVals)
+export const CHILD_TYPE_INDEX_MAP = new Map(childTypeIndexMapVals)
 
 export const PARENT_TYPE_MAP = new Map(parentTypeMap.slice())
 

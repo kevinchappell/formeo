@@ -84,7 +84,7 @@ const realTarget = target => {
   return target
 }
 
-const makeListItem = ({ value, textLabel, htmlLabel }, autocomplete) => {
+const makeListItem = ({ value, textLabel, htmlLabel, componentType }, autocomplete) => {
   const optionConfig = {
     tag: 'li',
     children: htmlLabel,
@@ -92,7 +92,7 @@ const makeListItem = ({ value, textLabel, htmlLabel }, autocomplete) => {
       value,
       label: textLabel,
     },
-    className: LIST_ITEM_CLASSNAME,
+    className: [LIST_ITEM_CLASSNAME, `component-type-${componentType}`],
     action: {
       mousedown: ({ target }) => {
         target = realTarget(target)
@@ -119,7 +119,7 @@ const makeComponentOptionsList = (component, autocomplete) => {
     const value = `${component.address}.options.${index}`
     const textLabel = option.label
     const htmlLabel = option.label
-    return makeListItem({ value, textLabel, htmlLabel }, autocomplete)
+    return makeListItem({ value, textLabel, htmlLabel, componentType: 'option' }, autocomplete)
   })
 
   const list = dom.create({
@@ -143,12 +143,13 @@ export const componentOptions = autocomplete => {
   const options = Object.entries(flatList).reduce((acc, [value, component]) => {
     const label = getComponentLabel(component, `${autocomplete.i18nKey}.${autocomplete.key}`)
     if (label) {
+      const componentType = component.name
       const typeConfig = {
         tag: 'span',
-        content: ` ${toTitleCase(component.name)}`,
+        content: ` ${toTitleCase(componentType)}`,
         className: 'component-type',
       }
-      const labelKey = `${component.name}.${label}`
+      const labelKey = `${componentType}.${label}`
       labels.push(labelKey)
       const count = labelCount(labels, labelKey)
 
@@ -164,7 +165,7 @@ export const componentOptions = autocomplete => {
         const componentOptionsList = makeComponentOptionsList(component, autocomplete)
         htmlLabel.push(componentOptionsList)
       }
-      const optionData = makeOptionData({ value, textLabel, htmlLabel, selectedId })
+      const optionData = makeOptionData({ value, textLabel, htmlLabel, componentType, selectedId })
 
       acc.push(makeListItem(optionData, autocomplete))
     }

@@ -1,5 +1,5 @@
 import Data from './data.js'
-import { uuid, sessionStorage, isAddress, parseData, clone } from '../common/utils/index.mjs'
+import { sessionStorage, isAddress, parseData, clone, buildFlatDataStructure } from '../common/utils/index.mjs'
 import ControlsData from './controls/index.js'
 
 import StagesData from './stages/index.js'
@@ -63,15 +63,21 @@ export class Components extends Data {
    * flattens the component tree
    * @returns {Object} where keys contains component type
    */
-  flatList(data = this.data, acculumator = Object.create(null)) {
-    return Object.entries(data).reduce((acc, [type, components]) => {
-      if (typeof components === 'object') {
-        for (const [id, component] of Object.entries(components)) {
-          acc[`${type}.${id}`] = component
-        }
-      }
-      return acc
-    }, acculumator)
+  flatList() {
+    const result = {}
+
+    for (const stageId of Object.keys(this.data.stages)) {
+      buildFlatDataStructure(this.data, stageId, 'stages', result)
+    }
+
+    return result
+  }
+
+  getChildData = ({ type, id }) => {
+    const component = this.get(type, id)
+    if (component) {
+      return component.getData()
+    }
   }
 
   get json() {

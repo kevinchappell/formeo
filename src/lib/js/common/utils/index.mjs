@@ -8,6 +8,7 @@ import {
   DEFAULT_FORMDATA,
   INTERNAL_COMPONENT_INDEX_TYPES,
   COMPONENT_INDEX_TYPE_MAP,
+  CHILD_TYPE_INDEX_MAP,
 } from '../../constants.js'
 import mergeWith from 'lodash/mergeWith.js'
 
@@ -381,3 +382,35 @@ export function parseData(data = Object.create(null)) {
 }
 
 export const cleanFormData = formData => (formData ? clone(parseData(formData)) : DEFAULT_FORMDATA())
+/**
+ * Builds a flat data structure from a nested data object.
+ *
+ * @param {Object} data - The nested data object containing components.
+ * @param {string} componentId - The ID of the component to start building the flat structure from.
+ * @param {string} componentType - The type of the component to start building the flat structure from.
+ * @param {Object} [result={}] - The result object to store the flat data structure.
+ * @returns {Object} The flat data structure with component IDs as keys and component data as values.
+ */
+export function buildFlatDataStructure(data, componentId, componentType, result = {}) {
+  if (!componentId || !data[componentType][componentId]) {
+    return result
+  }
+
+  // Add current component to result
+  const key = `${componentType}.${componentId}`
+  result[key] = data[componentType][componentId]
+
+  // Get the child type for current component
+  const childType = CHILD_TYPE_INDEX_MAP.get(componentType)
+
+  if (childType) {
+    const childrenIds = data[componentType][componentId].data?.children || []
+
+    // Recursively process each child
+    for (const childId of childrenIds) {
+      buildFlatDataStructure(data, childId, childType, result)
+    }
+  }
+
+  return result
+}

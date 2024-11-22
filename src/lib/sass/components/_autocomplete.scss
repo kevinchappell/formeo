@@ -30,10 +30,43 @@
     font-size: 0.85em;
 
     &.active-option {
-      background-color: sass-color.adjust(color.$brand-info, $lightness: 33%);
+      &.component-type-stage {
+        background-color: color.$stage-outline-color;
+        color: color.$white;
+      }
+      &.component-type-row {
+        background-color: color.$row-outline-color;
+        color: color.$white;
+      }
+      &.component-type-column {
+        background-color: color.$column-outline-color;
+        color: color.$white;
+      }
+      &.component-type-field {
+        background-color: color.$field-outline-color;
+        color: color.$white;
+      }
+      &.component-type-option {
+        background-color: color.$option-outline-color;
+        color: color.$white;
+      }
     }
     &:hover {
-      background-color: sass-color.adjust(color.$brand-info, $lightness: 16.6%);
+      &.component-type-stage {
+        background-color: color.$stage-highlight-color;
+      }
+      &.component-type-row {
+        background-color: color.$row-highlight-color;
+      }
+      &.component-type-column {
+        background-color: color.$column-highlight-color;
+      }
+      &.component-type-field {
+        background-color: color.$field-highlight-color;
+      }
+      &.component-type-option {
+        background-color: color.$option-highlight-color;
+      }
     }
 
     &:has(.options-list):hover .options-list {
@@ -50,6 +83,6 @@
   &.options-list {
     left: 100%;
     top: 0;
-    width:75%;
+    width: 75%;
   }
 }
