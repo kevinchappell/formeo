@@ -50,7 +50,10 @@ export default class Control {
           return group && controls.panels.nav.refresh(indexOfNode(group))
         },
         click: ({ target }) => {
-          controls.addElement(target.parentElement.id)
+          const controlId = target.closest('.field-control')?.id
+          if (controlId) {
+            controls.addElement(controlId)
+          }
         },
       },
     }

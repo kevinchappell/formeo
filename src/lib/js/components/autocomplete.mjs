@@ -61,7 +61,6 @@ const getComponentLabel = ({ id, ...component }, key) => {
   const { name } = component.name
   const labelResolver = labelResolverMap.get(key)
   const label = labelResolver(component)
-
   const externalLabel = (...externalAddress) =>
     i18n.get(externalAddress.join('.')) || toTitleCase(externalAddress.join(' '))
 
