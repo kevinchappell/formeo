@@ -127,7 +127,12 @@ export class Components extends Data {
     }
     const [type, id, ...path] = Array.isArray(address) ? address : address.split('.')
     const componentType = type.replace(/s?$/, 's')
-    const component = this[componentType].get(id)
+    const componentIndex = this[componentType]
+    const component = componentIndex.get(id)
+    if (id === '83391e95-5162-49a3-8b6b-a7ed1338e23f') {
+      // debugger
+      // console.log('isAddress', id, component, this[componentType])
+    }
     return path.length ? component.get(path) : component
   }
 

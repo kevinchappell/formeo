@@ -6,7 +6,6 @@ import {
   CONDITION_INPUT_ORDER,
   FIELD_INPUT_PROPERTY_MAP,
   OPERATORS,
-  ANIMATION_SPEED_BASE,
   INTERNAL_COMPONENT_INDEX_TYPES,
 } from '../../constants.js'
 import events from '../../common/events.js'
@@ -31,6 +30,19 @@ const optionDataMap = {
 }
 
 const componentIndexRegex = new RegExp(`^(${INTERNAL_COMPONENT_INDEX_TYPES.join('|')}).`)
+
+const getFieldPropertyType = value => {
+  let fieldPropertyType = 'field.property'
+  if (value && isAddress(value)) {
+    console.log(Components.data.fields)
+    const component = Components.getAddress(value)
+    if (component) {
+      fieldPropertyType = component.isCheckbox ? 'field.checkbox.property' : 'field.input.property'
+    }
+  }
+
+  return fieldPropertyType
+}
 
 const getOptionData = key => {
   const isExternal = isExternalAddress(key)
@@ -213,18 +225,18 @@ export default class EditPanelItem {
     return inputs
   }
 
-  generateConditionFields = (type, vals) => {
+  generateConditionFields = (conditionType, vals) => {
     const label = {
       tag: 'label',
-      className: `condition-label ${type}-condition-label`,
-      content: i18n.get(type) || type,
+      className: `condition-label ${conditionType}-condition-label`,
+      content: i18n.get(conditionType) || conditionType,
     }
 
     return vals.map((condition, i) => {
       const conditionState = []
       const fields = Object.entries(condition)
         .map(([key, val]) => {
-          const field = this.conditionInput(key, val, type, i)
+          const field = this.conditionInput({ key, val, conditionType, i }, vals[i])
           field && conditionState.push([field.className, val.trim()].filter(Boolean).join('-'))
           return field
         })
@@ -246,7 +258,7 @@ export default class EditPanelItem {
 
       return {
         children: orderedFields,
-        className: `f-condition-row ${type}-condition-row ${conditionState.join(' ')}`,
+        className: `f-condition-row ${conditionType}-condition-row ${conditionState.join(' ')}`,
       }
     })
   }
@@ -330,7 +342,7 @@ export default class EditPanelItem {
     }
   }
 
-  conditionInput = (key, val, conditionType, i) => {
+  conditionInput = ({ key, val, conditionType, i }, vals) => {
     const field = this.field
     const conditionPath = `${this.itemKey}.${conditionType}.${i}`
     const conditionAddress = `${this.field.id}.${conditionPath}`
@@ -388,7 +400,16 @@ export default class EditPanelItem {
 
         return componentInput
       },
-      sourceProperty: value => createConditionSelect('sourceProperty', value, 'field.property'),
+      sourceProperty: value => {
+        console.log(this.field)
+        // console.log(value, vals)
+        console.log(getFieldPropertyType(vals.source))
+        setTimeout(() => {
+          console.log(getFieldPropertyType(vals.source))
+        }, 0)
+
+        return createConditionSelect('sourceProperty', value, 'field.property')
+      },
       targetProperty: value => createConditionSelect('targetProperty', value, 'field.property'),
       target: value => segmentTypes.source(value, 'target'),
       value: value => {

@@ -55,6 +55,9 @@
       &.component-type-field {
         background-color: color.$field-outline-color;
         color: color.$white;
+        .component-type-option {
+          color: color.$black;
+        }
       }
       &.component-type-option {
         background-color: color.$option-outline-color;
@@ -75,6 +78,7 @@
         background-color: color.$field-highlight-color;
       }
       &.component-type-option {
+        color: color.$black;
         background-color: color.$option-highlight-color;
       }
     }
