@@ -1,5 +1,6 @@
 import pkg from '../../../package.json' with { type: 'json' }
 import { uuid } from './common/utils/index.mjs'
+import { objectFromStringArray } from './common/utils/object.mjs'
 
 const isProd = import.meta.env?.PROD
 
@@ -163,20 +164,14 @@ export const LOGICAL_OPERATORS = {
   or: '||',
 }
 
-const visiblityConfigs = {
-  isVisible: 'config.isVisible',
-  isNotVisible: 'config.isNotVisible',
-}
+const visiblityConfigs = ['isVisible', 'isNotVisible']
 
 export const ASSIGNMENT_OPERATORS = {
   equals: '=',
 }
 
 export const CONDITION_INPUT_ORDER = [
-  'label',
-  'logical',
   'source',
-  'thenTarget',
   'sourceProperty',
   'comparison',
   'target',
@@ -185,15 +180,12 @@ export const CONDITION_INPUT_ORDER = [
   'value',
 ]
 
+// @todo remove
 export const FIELD_CHECKBOX_PROPERTY_MAP = {
-  isChecked: 'attrs.checked',
   ...visiblityConfigs,
 }
 
-export const FIELD_INPUT_PROPERTY_MAP = {
-  value: 'attrs.value',
-  ...visiblityConfigs,
-}
+export const FIELD_INPUT_PROPERTY_MAP = objectFromStringArray(['isChecked', 'value', ...visiblityConfigs])
 
 export const OPERATORS = {
   comparison: COMPARISON_OPERATORS,

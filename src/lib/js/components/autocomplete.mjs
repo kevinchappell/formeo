@@ -4,7 +4,7 @@ import dom from '../common/dom.js'
 import Components from './index.js'
 import { ANIMATION_SPEED_FAST, ANIMATION_SPEED_SLOW } from '../constants.js'
 import { toTitleCase } from '../common/utils/string.mjs'
-import { isAddress } from '../common/utils/index.mjs'
+import { isAddress, noop } from '../common/utils/index.mjs'
 
 const BASE_NAME = 'f-autocomplete'
 const DISPLAY_FIELD_CLASSNAME = `${BASE_NAME}-display-field`
@@ -47,9 +47,11 @@ const resolveComponentLabel = component => {
 }
 
 const labelResolverMap = new Map([
+  ['condition.source', resolveFieldLabel],
   ['if.condition.source', resolveFieldLabel],
   ['if.condition.target', resolveFieldLabel],
   ['then.condition.target', resolveComponentLabel],
+  ['condition.target', resolveComponentLabel],
 ])
 
 /**
@@ -140,7 +142,7 @@ export const componentOptions = autocomplete => {
   const labels = []
   const flatList = Components.flatList()
   const options = Object.entries(flatList).reduce((acc, [value, component]) => {
-    const label = getComponentLabel(component, `${autocomplete.i18nKey}.${autocomplete.key}`)
+    const label = getComponentLabel(component, autocomplete.key)
     if (label) {
       const componentType = component.name
       const typeConfig = {
@@ -186,14 +188,13 @@ export default class Autocomplete {
    * Create an Autocomplete instance
    * @param {String} key - The key for the autocomplete instance
    * @param {String} value - The initial value for the autocomplete input
-   * @param {String} i18nKey - The internationalization key for the autocomplete
    */
-  constructor(key, value, i18nKey) {
+  constructor({ key, value, className, onChange = noop }) {
     this.key = key
-    this.className = key.replace(/\./g, '-')
+    this.className = className || this.key.replace(/\./g, '-')
     this.value = value
+    this.onChange = onChange || noop
     this.events = []
-    this.i18nKey = i18nKey
 
     this.build()
   }
@@ -281,9 +282,10 @@ export default class Autocomplete {
         this.hideList()
       },
       input: evt => {
-        const filteredOptions = dom.toggleElementsByStr(this.list.querySelectorAll('li'), evt.target.value)
+        const { value } = evt.target
+        const filteredOptions = dom.toggleElementsByStr(this.list.querySelectorAll('li'), value)
 
-        if (evt.target.value.length === 0) {
+        if (value.length === 0) {
           this.clearValue()
         }
 
@@ -293,11 +295,6 @@ export default class Autocomplete {
           const activeOption = this.getActiveOption() || filteredOptions[0]
           this.showList(activeOption)
         }
-
-        const value = evt.target.value.trim()
-
-        this.hiddenField.value = value
-        this.value = value
 
         this.setValue({ dataset: { label: value, value } })
       },
@@ -311,7 +308,7 @@ export default class Autocomplete {
         type: 'text',
         className: DISPLAY_FIELD_CLASSNAME,
         value: this.label || this.value,
-        placeholder: i18n.get(`${this.i18nKey}.${this.key}.placeholder`),
+        placeholder: i18n.get(`${this.key}.placeholder`),
       },
     })
     this.hiddenField = dom.create({
@@ -324,20 +321,22 @@ export default class Autocomplete {
       attrs: { className: LIST_CLASSNAME },
     })
 
-    const clearButton = {
+    this.clearButton = dom.create({
       tag: 'span',
       content: dom.icon('remove'),
-      className: 'clear-button',
+      className: 'clear-button hidden',
       action: { click: () => this.clearValue() },
-    }
+    })
 
     this.dom = dom.create({
-      children: [this.displayField, clearButton, this.hiddenField],
+      children: [this.displayField, this.clearButton, this.hiddenField],
       className: this.className,
       action: {
         onRender: element => {
           this.stage = element.closest('.formeo-stage')
-          this.displayField.value = this.label
+          if (this.value) {
+            this.displayField.value = this.label
+          }
         },
       },
     })
@@ -347,7 +346,7 @@ export default class Autocomplete {
 
   get label() {
     const component = this.value && Components.getAddress(this.value)
-    return (component && getComponentLabel(component, `${this.i18nKey}.${this.key}`)) || this.value
+    return (component && getComponentLabel(component, `${this.key}`)) || this.value
   }
 
   updateOptions() {
@@ -513,6 +512,7 @@ export default class Autocomplete {
     this.selectOption(null)
 
     this.setValue({ dataset: { label: '', value: '' } })
+    this.displayField.focus()
   }
 
   /**
@@ -522,24 +522,13 @@ export default class Autocomplete {
    */
   setValue(target) {
     const { label, value } = target.dataset
-    const trimmedValue = value.trim()
 
     this.displayField.value = label
-    this.hiddenField.value = trimmedValue
-    this.value = trimmedValue
+    this.hiddenField.value = value
+    this.value = value
 
-    this.runEvent('onChange', { target: this.hiddenField })
-  }
+    this.clearButton.classList.toggle('hidden', !value.length)
 
-  addEvent(key, event) {
-    this.events.push([key, event])
-  }
-
-  runEvent(eventName, evt) {
-    for (const [key, event] of this.events) {
-      if (key === eventName) {
-        event(evt)
-      }
-    }
+    this.onChange?.({ target: this.hiddenField })
   }
 }

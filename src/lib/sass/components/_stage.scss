@@ -53,6 +53,10 @@
   &.highlight-component {
     box-shadow: 0 0 mixins.space() 2px color.$stage-outline-color;
   }
+
+  .hidden {
+    display: none;
+  }
 }
 
 .editing-stage {

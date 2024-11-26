@@ -98,3 +98,17 @@ export function mergeActions(target, source = {}) {
 
   return result
 }
+
+/**
+ * Converts an array of strings into an object where each string becomes both a key and its value
+ * @param {string[]} arr - The input array of strings
+ * @returns {Object.<string, string>} An object where each array item is both a key and value
+ * @example
+ * objectFromStringArray(['foo', 'bar']) // returns { foo: 'foo', bar: 'bar' }
+ */
+export function objectFromStringArray(arr) {
+  return arr.reduce((acc, item) => {
+    acc[item] = item
+    return acc
+  }, {})
+}

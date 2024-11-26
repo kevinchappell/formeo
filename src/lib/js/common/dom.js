@@ -488,7 +488,7 @@ class DOM {
         select: () => {
           return {
             tag: 'option',
-            attrs: option,
+            attrs: option.attrs || option,
             children: option.label,
           }
         },

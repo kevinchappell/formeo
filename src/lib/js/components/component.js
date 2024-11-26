@@ -25,6 +25,7 @@ export default class Component extends Data {
     super(name, data)
     this.id = data.id
     this.name = name
+    this.indexName = `${name}s`
     this.config = Components[`${this.name}s`].config
     merge(this.config, data.config)
     this.address = `${this.name}s.${this.id}`
