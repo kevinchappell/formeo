@@ -42,8 +42,6 @@ class ConditionField {
   }
 
   generateDom(args) {
-    console.log(this.name)
-
     return segmentTypes[this.name](args, this.values)
   }
 }
@@ -60,7 +58,7 @@ export class Condition {
   }
 
   generateDom(conditionValues) {
-    const orderedValues = orderConditionValues(conditionValues)
+    const orderedValues = new Map(orderConditionValues(conditionValues))
     const label = {
       tag: 'label',
       className: `condition-label ${this.conditionType}-condition-label`,
@@ -68,13 +66,13 @@ export class Condition {
     }
 
     const fieldsDom = []
-console.log(this.conditionType, conditionValues, orderedValues)
+    // console.log(this.conditionType, conditionValues, orderedValues)
     for (const [key, value] of orderedValues) {
-      const conditionField = new ConditionField({ key, value, conditionType: this.conditionType }, this.values)
+      const conditionField = new ConditionField({ key, value, conditionType: this.conditionType }, orderedValues)
       this.fields.set(key, conditionField)
       fieldsDom.push(conditionField.dom)
     }
-    
+
     return {
       children: [label, ...fieldsDom],
       className: `f-condition-row ${this.conditionType}-condition-row`,

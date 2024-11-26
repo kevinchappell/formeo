@@ -1,5 +1,4 @@
 import i18n from '@draggable/i18n'
-import Autocomplete from '../../autocomplete.mjs'
 import { toTitleCase } from '../../../common/utils/string.mjs'
 import dom from '../../../common/dom'
 import {
@@ -55,8 +54,8 @@ export const segmentTypes = {
   sourceProperty: createConditionSelect,
   targetProperty: createConditionSelect,
   target: args => segmentTypes.source(args),
-  value: ({ key, value, onChange }) => {
-    console.log('value', value)
+  value: ({ key, value, onChange }, conditionValues) => {
+    console.log('value.conditionValues', conditionValues)
     const valueField = ITEM_INPUT_TYPE_MAP.string({ key: `condition.${key}`, value })
 
     valueField.action = {
