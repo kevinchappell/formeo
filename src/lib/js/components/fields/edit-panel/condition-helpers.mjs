@@ -9,9 +9,9 @@ import {
   isInternalAddress,
 } from '../../../common/utils/index.mjs'
 import { FIELD_INPUT_PROPERTY_MAP, INTERNAL_COMPONENT_INDEX_TYPES, OPERATORS } from '../../../constants'
-import { Components } from '../..'
+import Components from '../../index.js'
 import events from '../../../common/events'
-import { indexOfNode } from '../../../common/helpers.mjs'
+import { indexOfNode, isInt } from '../../../common/helpers.mjs'
 import { ITEM_INPUT_TYPE_MAP } from './helpers.mjs'
 
 const optionDataCache = {}
@@ -190,6 +190,29 @@ export const conditionFieldHandlers = {
 
     for (const fieldName of fieldsToToggleVisibility) {
       fields.get(fieldName)?.classList.toggle('hidden-property', !target.value)
+    }
+
+    const sourceProperty = fields.get('sourceProperty')
+    if (isInternalAddress(target.value)) {
+      const component = Components.getAddress(target.value)
+      const isCheckbox = component.isCheckbox
+      const options = sourceProperty.querySelectorAll('option')
+
+      for (const option of options) {
+        const isChecked = option.value === 'isChecked'
+        if (isCheckbox) {
+          option.classList.toggle('hidden-property', !isChecked)
+        } else {
+          option.classList.toggle('hidden-property', isChecked)
+        }
+      }
+
+      if (!isCheckbox) {
+        const firstNotIsChecked = sourceProperty.querySelector('option:not([value="isChecked"])')
+        sourceProperty.value = firstNotIsChecked.value
+      } else {
+        sourceProperty.value = 'isChecked'
+      }
     }
   },
 }

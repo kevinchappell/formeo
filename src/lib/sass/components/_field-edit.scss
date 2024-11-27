@@ -241,6 +241,10 @@
     margin: 0;
   }
 
+  .hidden-option {
+    display: none;
+  }
+
   &.if-condition-row {
     .condition-target {
       input {
