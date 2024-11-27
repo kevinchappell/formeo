@@ -1,6 +1,6 @@
 import i18n from '@draggable/i18n'
 import { toTitleCase } from '../../../common/utils/string.mjs'
-import Autocomplete from '../../autocomplete.mjs'
+import Autocomplete from '../../autocomplete/autocomplete.mjs'
 import dom from '../../../common/dom'
 
 function inputConfigBase({ key, value, type = 'text', checked }) {
@@ -32,7 +32,7 @@ export function labelHelper(key) {
 }
 
 export const ITEM_INPUT_TYPE_MAP = {
-  autocomplete: (...args) => new Autocomplete(...args),
+  autocomplete: (...args) => new Autocomplete(...args).createProxy(),
   string: ({ key, value }) => inputConfigBase({ key, value }),
   boolean: ({ key, value }) => {
     const type = key === 'selected' ? 'radio' : 'checkbox'

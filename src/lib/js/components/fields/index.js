@@ -46,16 +46,16 @@ export class Fields extends ComponentData {
     return Object.entries(this.data).reduce((acc, [key, val]) => {
       const { conditions, ...data } = val?.getData() || val
 
-      if (conditions?.length) {
-        let hasConditions = true
-        if (conditions.length === 1) {
-          const [firstCondition] = conditions
-          hasConditions = Boolean(firstCondition.if[0].source)
-        }
-        if (hasConditions) {
-          data.conditions = conditions
-        }
-      }
+      // if (conditions?.length) {
+      //   let hasConditions = true
+      //   if (conditions.length === 1) {
+      //     const [firstCondition] = conditions
+      //     hasConditions = Boolean(firstCondition.if[0].source)
+      //   }
+      //   if (hasConditions) {
+      //     data.conditions = conditions
+      //   }
+      // }
 
       acc[key] = data
       return acc

@@ -10,7 +10,7 @@ import {
 } from '../../../constants.js'
 import events from '../../../common/events.js'
 import Components from '../../index.js'
-import Autocomplete from '../../autocomplete.mjs'
+import Autocomplete from '../../autocomplete/autocomplete.mjs'
 import {
   isExternalAddress,
   isAddress,

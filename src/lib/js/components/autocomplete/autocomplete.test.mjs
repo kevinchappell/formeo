@@ -1,6 +1,6 @@
 import { test, suite, mock } from 'node:test'
 import { componentOptions, labelCount } from './autocomplete.mjs'
-import components from './index.js'
+import components from '../index.js'
 
 const mockFlatList = {
   'test.id': {

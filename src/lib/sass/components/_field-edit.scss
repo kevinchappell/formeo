@@ -228,9 +228,17 @@
 
   [class^="condition-"] {
     max-width: 100%;
-    transition: max-width var.$animation-speed-base,
-      display var.$animation-speed-base;
-    will-change: max-width, display;
+    transition: max-width var.$animation-speed-base;
+    will-change: max-width;
+  }
+
+  .hidden-property {
+    max-width: 0%;
+    padding: 0;
+    border: 0 none;
+    overflow: hidden;
+    box-shadow: none;
+    margin: 0;
   }
 
   &.if-condition-row {

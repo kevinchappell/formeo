@@ -62,7 +62,7 @@ export const segmentTypes = {
       input: onChange,
     }
 
-    return dom.create(valueField)
+    return valueField
   },
   // assignment: value => createConditionSelect('assignment', value),
 }
@@ -171,36 +171,25 @@ function makeOptionDomConfig({ fieldName, fieldValue, key, optionValue }) {
   }
 }
 
-function createConditionSelect({ key, value }) {
+function createConditionSelect({ key, value, onChange }) {
   // console.log(key)
   const optionConfigs = getOptionConfigs(key, value)
   const propertyFieldConfig = ITEM_INPUT_TYPE_MAP.array({ key: `condition.${key}`, value: optionConfigs })
 
   propertyFieldConfig.action = {
-    change: onChangeCondition,
+    change: onChange,
     // onRender: elem => onChangeCondition({ target: elem }),
   }
 
   return propertyFieldConfig
 }
 
-function onChangeCondition({ target }) {
-  const conditionRow = target.closest('.f-condition-row')
-  const regex = new RegExp(`${target.className}(?:\\S?)+`, 'gm')
-  conditionRow.className = conditionRow.className.replace(regex, '')
-  if (target.tagName === 'SELECT') {
-    conditionRow.classList.add([target.className, target.value].filter(Boolean).join('-'))
-  }
+export const conditionFieldHandlers = {
+  source: (target, fields) => {
+    const fieldsToToggleVisibility = ['sourceProperty', 'comparison', 'targetProperty', 'target']
 
-  const evtData = {
-    dataPath,
-    value: target.value,
-    src: target,
-  }
-
-  events.formeoUpdated(evtData)
-  Components.setAddress(dataPath, target.value)
-
-  const rowIndex = indexOfNode(conditionRow)
-  this.processConditionUIState(this.itemFieldGroups[rowIndex])
+    for (const fieldName of fieldsToToggleVisibility) {
+      fields.get(fieldName)?.classList.toggle('hidden-property', !target.value)
+    }
+  },
 }
