@@ -7,7 +7,8 @@ import RowsData from './rows/index.js'
 import ColumnsData from './columns/index.js'
 import FieldsData from './fields/index.js'
 import ExternalsData from './externals.js'
-import { DEFAULT_FORMDATA, SESSION_FORMDATA_KEY, version } from '../constants.js'
+import { COMPONENT_INDEX_TYPE_MAP, DEFAULT_FORMDATA, SESSION_FORMDATA_KEY, version } from '../constants.js'
+import { splitAddress } from '../common/utils/string.mjs'
 
 export const Stages = StagesData
 export const Rows = RowsData
@@ -105,13 +106,20 @@ export class Components extends Data {
     Fields.config = fields
   }
 
+  getIndex(type) {
+    return this[type] || this[COMPONENT_INDEX_TYPE_MAP.get(type)]
+  }
+
   /**
    * call `set` on a component in memory
    */
   setAddress(fullAddress, value) {
-    const [type, id, ...localAddress] = Array.isArray(fullAddress) ? fullAddress : fullAddress.split('.')
-    const componentType = type.replace(/s?$/, 's')
-    const component = this[componentType].get(id)
+    if (!isAddress(fullAddress)) {
+      return
+    }
+    const [type, id, ...localAddress] = Array.isArray(fullAddress) ? fullAddress : splitAddress(fullAddress)
+    const componentIndex = this.getIndex(type)
+    const component = componentIndex.get(id)
 
     component?.set(localAddress, value)
 
@@ -121,34 +129,30 @@ export class Components extends Data {
   /**
    * Fetch a component from memory by address
    */
-  getAddress(address) {
-    if (!isAddress(address)) {
+  getAddress(fullAddress) {
+    if (!isAddress(fullAddress)) {
       return
     }
-    const [type, id, ...path] = Array.isArray(address) ? address : address.split('.')
-    const componentType = type.replace(/s?$/, 's')
-    const componentIndex = this[componentType]
+    const [type, id, ...localAddress] = Array.isArray(fullAddress) ? fullAddress : splitAddress(fullAddress)
+    const componentIndex = this.getIndex(type)
     const component = componentIndex.get(id)
-    if (id === '83391e95-5162-49a3-8b6b-a7ed1338e23f') {
-      // debugger
-      // console.log('isAddress', id, component, this[componentType])
-    }
-    return path.length ? component.get(path) : component
+
+    return localAddress.length ? component.get(localAddress) : component
   }
 
   getConditionMap(address) {
     if (isAddress(address)) {
-      const splitAddress = address.split('.')
-
-      return splitAddress.every(segment => Boolean(segment)) && this[splitAddress[0]].conditionMap.get(splitAddress[1])
+      return (
+        splitAddress(address).every(segment => Boolean(segment)) &&
+        this[splitAddress[0]].conditionMap.get(splitAddress[1])
+      )
     }
   }
 
   setConditionMap(address, component) {
     if (isAddress(address)) {
-      const splitAddress = address.split('.')
       return (
-        splitAddress.every(segment => Boolean(segment)) &&
+        splitAddress(address).every(segment => Boolean(segment)) &&
         this[splitAddress[0]].conditionMap.set(splitAddress[1], component)
       )
     }
@@ -156,10 +160,9 @@ export class Components extends Data {
 
   removeConditionMap(address) {
     if (isAddress(address)) {
-      const splitAddress = address.split('.')
-
       return (
-        splitAddress.every(segment => Boolean(segment)) && this[splitAddress[0]].conditionMap.delete(splitAddress[1])
+        splitAddress(address).every(segment => Boolean(segment)) &&
+        this[splitAddress[0]].conditionMap.delete(splitAddress[1])
       )
     }
   }

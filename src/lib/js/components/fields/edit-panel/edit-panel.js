@@ -2,7 +2,7 @@ import i18n from '@draggable/i18n'
 import dom from '../../../common/dom.js'
 import actions from '../../../common/actions.js'
 import EditPanelItem from './edit-panel-item.mjs'
-import { capitalize } from '../../../common/helpers.mjs'
+import { capitalize, safeAttrName } from '../../../common/helpers.mjs'
 import { slugify, toTitleCase } from '../../../common/utils/string.mjs'
 
 /**
@@ -29,7 +29,6 @@ export default class EditPanel {
     this.props = this.createProps(data)
     this.editButtons = this.createEditButtons()
     return {
-      id: `${this.field.id}-${this.name}-panel`,
       config: {
         label: i18n.get(`panel.label.${this.name}`),
       },
@@ -49,10 +48,10 @@ export default class EditPanel {
   createProps(data) {
     this.editPanelItems = Array.from(data).map((dataVal, index) => {
       const isArray = this.type === 'array'
-      const itemKey = [this.name, isArray ? String(index) : dataVal[0]].join('.')
-      const itemData = isArray ? dataVal : { [dataVal[0]]: dataVal[1] }
+      const key = isArray ? `[${index}]` : `.${dataVal[0]}`
+      const val = isArray ? dataVal : { [dataVal[0]]: dataVal[1] }
 
-      return new EditPanelItem({ key: itemKey, data: itemData, field: this.field })
+      return new EditPanelItem({ key: `${this.name}${key}`, data: val, field: this.field, index, panelName: this.name })
     })
     const editGroupConfig = {
       tag: 'ul',
@@ -128,7 +127,7 @@ export default class EditPanel {
    */
   addAttribute = (attr, valArg) => {
     let val = valArg
-    const safeAttr = slugify(attr)
+    const safeAttr = safeAttrName(attr)
     const itemKey = `attrs.${safeAttr}`
 
     if (!i18n.current[itemKey]) {
@@ -143,7 +142,12 @@ export default class EditPanel {
     this.field.set(`attrs.${attr}`, val)
 
     const existingAttr = this.props.querySelector(`.field-attrs-${safeAttr}`)
-    const newAttr = new EditPanelItem({ key: itemKey, data: { [safeAttr]: val }, field: this.field })
+    const newAttr = new EditPanelItem({
+      key: itemKey,
+      data: { [safeAttr]: val },
+      field: this.field,
+      panelName: this.name,
+    })
 
     if (existingAttr) {
       this.props.replaceChild(newAttr.dom, existingAttr)
@@ -162,7 +166,7 @@ export default class EditPanel {
     const fieldOptionData = this.field.get('options')
     const type = controlId === 'select' ? 'option' : controlId
     const newOptionLabel = i18n.get('newOptionLabel', { type }) || 'New Option'
-    const itemKey = `options.${this.data.length}`
+    const itemKey = `options[${this.data.length}]`
 
     const lastOptionData = fieldOptionData[fieldOptionData.length - 1]
     const optionTemplate = fieldOptionData.length ? lastOptionData : {}
@@ -171,10 +175,11 @@ export default class EditPanel {
       itemData.value = slugify(newOptionLabel)
     }
     const newOption = new EditPanelItem({
-      key: itemKey,
+      key: String(this.data.length),
       data: itemData,
       field: this.field,
       index: this.props.children.length,
+      panelName: this.name,
     })
 
     this.editPanelItems.push(newOption)

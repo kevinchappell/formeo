@@ -1,25 +1,9 @@
 import i18n from '@draggable/i18n'
-import { orderObjectsBy, indexOfNode } from '../../../common/helpers.mjs'
 import dom from '../../../common/dom.js'
-import animate from '../../../common/animation.js'
-import {
-  CONDITION_INPUT_ORDER,
-  FIELD_INPUT_PROPERTY_MAP,
-  OPERATORS,
-  INTERNAL_COMPONENT_INDEX_TYPES,
-  LOGICAL_OPERATORS,
-} from '../../../constants.js'
+import { CONDITION_INPUT_ORDER } from '../../../constants.js'
 import events from '../../../common/events.js'
 import Components from '../../index.js'
-import Autocomplete from '../../autocomplete/autocomplete.mjs'
-import {
-  isExternalAddress,
-  isAddress,
-  isBoolKey,
-  getIndexComponentType,
-  isInternalAddress,
-} from '../../../common/utils/index.mjs'
-import { toTitleCase } from '../../../common/utils/string.mjs'
+import { debounce } from '../../../common/utils/index.mjs'
 import { conditionFieldHandlers, segmentTypes } from './condition-helpers.mjs'
 
 function orderConditionValues(conditionValues, fieldOrder = CONDITION_INPUT_ORDER) {
@@ -31,35 +15,18 @@ function orderConditionValues(conditionValues, fieldOrder = CONDITION_INPUT_ORDE
   }, [])
 }
 
-class ConditionField {
-  constructor({ key, value, conditionType }, conditionValues) {
-    this.name = key
-    this.value = value
-
-    this.values = conditionValues
-    // console.log(dom)
-    this.dom = this.generateDom({ key, value, conditionType }, conditionValues)
-  }
-
-  generateDom(fieldArgs, conditionValues) {
-    const dom = segmentTypes[this.name](fieldArgs, conditionValues)
-    // console.log(dom)
-    return dom
-  }
-}
-
 export class Condition {
   constructor({ conditionValues, conditionType, index }, parent) {
     this.values = new Map(orderConditionValues(conditionValues))
     this.conditionType = conditionType
     this.index = index
     this.parent = parent
-    this.address = `${parent.address}.${conditionType}.${index}`
+    this.address = `${parent.address}.${conditionType}[${index}]`
     this.fields = new Map()
-    this.dom = this.generateDom(conditionValues)
+    this.dom = this.generateDom()
   }
 
-  generateDom(conditionValues) {
+  generateDom() {
     // const orderedValues = new Map(orderConditionValues(conditionValues))
     const label = {
       tag: 'label',
@@ -96,46 +63,28 @@ export class Condition {
   }
 
   processUiState() {
-    // console.log(Array.from(this.values.keys()), this.fields)
-    // console.log(this.fields)
     for (const [key, field] of this.fields) {
       this.onChangeCondition({ target: field, key })
     }
-    // console.log(this.address, Components.get(this.address), this.values)
   }
+
+  updateDataDebounced = debounce(evtData => {
+    events.formeoUpdated(evtData)
+    // Components.setAddress(evtData.dataPath, evtData.value)
+    this.parent.field.data.conditions[0].if[0] = evtData.value
+    console.log(this.parent.field.data.conditions[0].if[0])
+
+  })
 
   onChangeCondition = ({ key, target }) => {
     const evtData = {
       dataPath: this.address,
-      value: target.value,
+      value: this.value,
       src: target,
     }
 
-    // console.log(target)
-  
-    events.formeoUpdated(evtData)
     conditionFieldHandlers[key]?.(target, this.fields)
 
-    Components.setAddress(this.address, target.value)
-
-    // console.log(target.className)
-    // const conditionRow = target.closest('.f-condition-row')
-    // const regex = new RegExp(`${target.className}(?:\\S?)+`, 'gm')
-    // conditionRow.className = conditionRow.className.replace(regex, '')
-    // if (target.tagName === 'SELECT') {
-    //   conditionRow.classList.add([target.className, target.value].filter(Boolean).join('-'))
-    // }
-
-    // const evtData = {
-    //   dataPath,
-    //   value: target.value,
-    //   src: target,
-    // }
-
-    // events.formeoUpdated(evtData)
-    // Components.setAddress(dataPath, target.value)
-
-    // const rowIndex = indexOfNode(conditionRow)
-    // this.processConditionUIState(this.itemFieldGroups[rowIndex])
+    this.updateDataDebounced(evtData)
   }
 }

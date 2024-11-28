@@ -341,7 +341,7 @@ class DOM {
   processAttrs(elem, element, isPreview) {
     const { attrs = {} } = elem
 
-    if (!isPreview && !attrs.name && this.isInput(elem.tag)) {
+    if (!isPreview && !attrs.name && attrs.name !== null && this.isInput(elem.tag)) {
       element.setAttribute('name', uuid(elem))
     }
 

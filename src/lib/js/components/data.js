@@ -1,8 +1,21 @@
 import { uuid } from '../common/utils/index.mjs'
 import events from '../common/events.js'
-import { CHANGE_TYPES } from '../constants.js'
 import { get, set } from '../common/utils/object.mjs'
 import isEqual from 'lodash/isEqual.js'
+import { splitAddress } from '../common/utils/string.mjs'
+
+const getChangeType = (oldVal, newVal) => {
+  if (oldVal === undefined) {
+    return 'added'
+  }
+  if (newVal === undefined) {
+    return 'removed'
+  }
+  if (isEqual(oldVal, newVal)) {
+    return 'unchanged'
+  }
+  return 'changed'
+}
 
 export default class Data {
   constructor(name, data = Object.create(null)) {
@@ -21,17 +34,8 @@ export default class Data {
   }
   toJSON = (data, format) => JSON.stringify(data, null, format)
   get = path => get(this.data, path)
-  getChangeType = (oldVal, newVal) => {
-    const change = CHANGE_TYPES.find(({ condition }) => condition(oldVal, newVal)) || { type: 'unknown' }
-    change.desc = change.type === 'added' ? `${oldVal} to ${newVal}` : newVal
-    return change
-  }
   set(path, newVal) {
     const oldVal = get(this.data, path)
-
-    if (isEqual(oldVal, newVal)) {
-      return this.data
-    }
 
     const data = set(this.data, path, newVal)
 
@@ -45,19 +49,19 @@ export default class Data {
     }
 
     if (!this.disableEvents) {
-      const change = this.getChangeType(oldVal, newVal)
       const evtData = {
         entity: this,
         dataPath: this.dataPath.replace(/\.+$/, ''),
         changePath: this.dataPath + path,
         value: newVal,
         data,
-        change: `${change.type}: ${change.desc}`,
+        changeType: getChangeType(oldVal, newVal),
         src: this.dom,
       }
       if (oldVal) {
         evtData.previousValue = oldVal
       }
+
       events.formeoUpdated(evtData)
     }
 
@@ -79,7 +83,7 @@ export default class Data {
     return this.set(elemId, data)
   }
   remove = path => {
-    const delPath = path.split('.')
+    const delPath = splitAddress(path)
     const delItem = delPath.pop()
     const parent = this.get(delPath)
     if (Array.isArray(parent)) {

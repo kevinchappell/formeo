@@ -17,7 +17,7 @@ import Data from './data.js'
 import animate from '../common/animation.js'
 import Controls from './controls/index.js'
 import { get, set } from '../common/utils/object.mjs'
-import { toTitleCase } from '../common/utils/string.mjs'
+import { splitAddress, toTitleCase } from '../common/utils/string.mjs'
 
 export default class Component extends Data {
   constructor(name, dataArg = {}, render) {
@@ -53,7 +53,7 @@ export default class Component extends Data {
   }
   remove = path => {
     if (path) {
-      const delPath = path.split('.')
+      const delPath = splitAddress(path)
       const delItem = delPath.pop()
       const parent = this.get(delPath)
       if (Array.isArray(parent)) {
@@ -540,6 +540,7 @@ export default class Component extends Data {
     return this.configVal
   }
 
+  // @todo remove, but first verify no longer needed
   runConditions = () => {
     const conditionsList = this.get('conditions')
     if (!conditionsList?.length) {

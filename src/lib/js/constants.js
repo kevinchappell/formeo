@@ -134,8 +134,6 @@ export const COLUMN_TEMPLATES = new Map(
   }, []),
 )
 
-export const CHANGE_TYPES = [{ type: 'added', condition: (o, n) => Boolean(o === undefined && n) }]
-
 export const SESSION_FORMDATA_KEY = `${name}-formData`
 export const SESSION_LOCALE_KEY = `${name}-locale`
 

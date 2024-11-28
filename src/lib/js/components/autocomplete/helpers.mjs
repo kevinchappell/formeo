@@ -114,7 +114,7 @@ const makeListItem = ({ value, textLabel, htmlLabel, componentType }, autocomple
 
 const makeComponentOptionsList = (component, autocomplete) => {
   const items = component.data.options.map((option, index) => {
-    const value = `${component.address}.options.${index}`
+    const value = `${component.address}.options[${index}]`
     const textLabel = option.label
     const htmlLabel = option.label
     return makeListItem({ value, textLabel, htmlLabel, componentType: 'option' }, autocomplete)

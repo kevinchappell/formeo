@@ -10,11 +10,7 @@ import {
 } from '../../../common/utils/index.mjs'
 import { FIELD_INPUT_PROPERTY_MAP, INTERNAL_COMPONENT_INDEX_TYPES, OPERATORS } from '../../../constants'
 import Components from '../../index.js'
-import events from '../../../common/events'
-import { indexOfNode, isInt } from '../../../common/helpers.mjs'
 import { ITEM_INPUT_TYPE_MAP } from './helpers.mjs'
-
-const optionDataCache = {}
 
 const optionDataMap = {
   'field.property': FIELD_INPUT_PROPERTY_MAP,
@@ -40,14 +36,6 @@ export const segmentTypes = {
       onChange,
       className: `condition-${keyArg}`,
     })
-    // add to condition map for the type so we can perform reverse lookup when editing a field connected to this condition
-    // Components.setConditionMap(value, field)
-
-    // componentInput.addEvent('onChange', evt => {
-    //   Components.removeConditionMap(Components.getAddress(dataPath))
-    //   onChangeCondition(evt)
-    //   Components.setConditionMap(evt.target.value, field)
-    // })
 
     return componentInput
   },
@@ -55,7 +43,6 @@ export const segmentTypes = {
   targetProperty: createConditionSelect,
   target: args => segmentTypes.source(args),
   value: ({ key, value, onChange }, conditionValues) => {
-    console.log('value.conditionValues', conditionValues)
     const valueField = ITEM_INPUT_TYPE_MAP.string({ key: `condition.${key}`, value })
 
     valueField.action = {
@@ -64,86 +51,6 @@ export const segmentTypes = {
 
     return valueField
   },
-  // assignment: value => createConditionSelect('assignment', value),
-}
-
-function processConditionUIState(fields) {
-  const findFields = classNames => {
-    classNames = classNames.split('|')
-    return fields.filter(field => classNames.includes(field.className))
-  }
-  const hideFields = fields => {
-    fields = Array.isArray(fields) ? fields : [fields]
-    for (const field of fields) {
-      const elem = field.dom || field
-      elem.style.display = 'none'
-    }
-  }
-  const showFields = fields => {
-    fields = Array.isArray(fields) ? fields : [fields]
-    for (const field of fields) {
-      const elem = field.dom || field
-      elem.removeAttribute('style')
-    }
-  }
-  const actions = new Map([
-    [
-      'condition-source',
-      field => {
-        const foundFields = findFields('condition-sourceProperty')
-        const [sourceProperty] = foundFields
-        let key = field.value
-        if (isInternalAddress(field.value)) {
-          const matches = field.value.match(componentIndexRegex)
-
-          if (matches?.[1]) {
-            const componentType = getIndexComponentType(matches[1])
-            key = `${componentType}.property`
-          }
-        }
-
-        key = isExternalAddress(field.value) ? field.value : 'field.property'
-        const sourcePropertyOptions = createOptions(key, sourceProperty.value)
-        addOptions(sourceProperty, sourcePropertyOptions)
-
-        if (field.value) {
-          return showFields(foundFields)
-        }
-        return hideFields(foundFields)
-      },
-    ],
-    [
-      'condition-target',
-      field => {
-        const foundFields = findFields('condition-targetProperty')
-        if (isAddress(field.value) && field.value) {
-          return showFields(foundFields)
-        }
-        return hideFields(foundFields)
-      },
-    ],
-    [
-      'condition-sourceProperty',
-      field => {
-        const foundFields = findFields('condition-comparison|condition-targetProperty|condition-target')
-        const val = field.value
-        const key = val.substring(val.lastIndexOf('.') + 1, val.length)
-
-        if (!isBoolKey(key)) {
-          return showFields(foundFields)
-        }
-
-        return hideFields(foundFields)
-      },
-    ],
-  ])
-
-  for (const field of fields) {
-    const action = actions.get(field.className)
-    if (action) {
-      action(field)
-    }
-  }
 }
 
 export function addOptions(select, options) {
@@ -188,11 +95,32 @@ const hiddenPropertyClassname = 'hidden-property'
 const hiddenOptionClassname = 'hidden-option'
 const optionsAddressRegex = /\.options\.\d+$/
 
+const toggleFieldVisibility = (fieldConditions, fields) => {
+  for (const [fieldName, conditions] of Object.entries(fieldConditions)) {
+    fields.get(fieldName)?.classList.toggle(hiddenPropertyClassname, !conditions.every(Boolean))
+  }
+}
+
+const isCheckedValue = 'isChecked'
+const togglePropertyOptions = (isCheckbox, propertyField) => {
+  const options = Array.from(propertyField.querySelectorAll('option'))
+
+  for (const option of options) {
+    const optionIsChecked = option.value === isCheckedValue
+    const shouldHide = isCheckbox ? !optionIsChecked : optionIsChecked
+
+    option.classList.toggle(hiddenOptionClassname, shouldHide)
+  }
+
+  propertyField.value = isCheckbox
+    ? isCheckedValue
+    : options.find(opt => opt.value !== isCheckedValue)?.value || propertyField.value
+}
+
 export const conditionFieldHandlers = {
   source: (field, fields) => {
     const hasValue = !!field.value
     const isCheckbox = !!field.value.match(optionsAddressRegex)
-    const sourceProperty = fields.get('sourceProperty')
     const target = fields.get('target')
     const visibilityConditions = {
       sourceProperty: [hasValue],
@@ -201,26 +129,20 @@ export const conditionFieldHandlers = {
       targetProperty: [hasValue, target.value],
     }
 
-    for (const [fieldName, conditions] of Object.entries(visibilityConditions)) {
-      fields.get(fieldName)?.classList.toggle(hiddenPropertyClassname, !conditions.every(Boolean))
+    toggleFieldVisibility(visibilityConditions, fields)
+    togglePropertyOptions(isCheckbox, fields.get('sourceProperty'))
+  },
+  target: (field, fields) => {
+    const targetProperty = fields.get('targetProperty')
+    const isCheckbox = !!field.value.match(optionsAddressRegex)
+    const hasValue = !!field.value
+    const visibilityConditions = {
+      targetProperty: [hasValue, isInternalAddress(field.value)],
+      assignment: [hasValue, !isCheckbox],
+      value: [hasValue, targetProperty.value !== isCheckedValue],
     }
 
-    const options = sourceProperty.querySelectorAll('option')
-
-    for (const option of options) {
-      const isChecked = option.value === 'isChecked'
-      if (isCheckbox) {
-        option.classList.toggle(hiddenOptionClassname, !isChecked)
-      } else {
-        option.classList.toggle(hiddenOptionClassname, isChecked)
-      }
-    }
-
-    if (!isCheckbox) {
-      const firstNotIsChecked = sourceProperty.querySelector('option:not([value="isChecked"])')
-      sourceProperty.value = firstNotIsChecked.value
-    } else {
-      sourceProperty.value = 'isChecked'
-    }
+    toggleFieldVisibility(visibilityConditions, fields)
+    togglePropertyOptions(isCheckbox, targetProperty)
   },
 }
