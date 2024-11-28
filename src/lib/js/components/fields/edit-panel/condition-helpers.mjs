@@ -102,17 +102,17 @@ const toggleFieldVisibility = (fieldConditions, fields) => {
 }
 
 const isCheckedValue = 'isChecked'
-const togglePropertyOptions = (isCheckbox, propertyField) => {
+const togglePropertyOptions = (isCheckable, propertyField) => {
   const options = Array.from(propertyField.querySelectorAll('option'))
 
   for (const option of options) {
     const optionIsChecked = option.value === isCheckedValue
-    const shouldHide = isCheckbox ? !optionIsChecked : optionIsChecked
+    const shouldHide = isCheckable ? !optionIsChecked : optionIsChecked
 
     option.classList.toggle(hiddenOptionClassname, shouldHide)
   }
 
-  propertyField.value = isCheckbox
+  propertyField.value = isCheckable
     ? isCheckedValue
     : options.find(opt => opt.value !== isCheckedValue)?.value || propertyField.value
 }
@@ -120,29 +120,29 @@ const togglePropertyOptions = (isCheckbox, propertyField) => {
 export const conditionFieldHandlers = {
   source: (field, fields) => {
     const hasValue = !!field.value
-    const isCheckbox = !!field.value.match(optionsAddressRegex)
+    const isCheckable = !!field.value.match(optionsAddressRegex)
     const target = fields.get('target')
     const visibilityConditions = {
       sourceProperty: [hasValue],
-      comparison: [hasValue, !isCheckbox],
+      comparison: [hasValue, !isCheckable],
       target: [hasValue],
       targetProperty: [hasValue, target.value],
     }
 
     toggleFieldVisibility(visibilityConditions, fields)
-    togglePropertyOptions(isCheckbox, fields.get('sourceProperty'))
+    togglePropertyOptions(isCheckable, fields.get('sourceProperty'))
   },
   target: (field, fields) => {
     const targetProperty = fields.get('targetProperty')
-    const isCheckbox = !!field.value.match(optionsAddressRegex)
+    const isCheckable = !!field.value.match(optionsAddressRegex)
     const hasValue = !!field.value
     const visibilityConditions = {
       targetProperty: [hasValue, isInternalAddress(field.value)],
-      assignment: [hasValue, !isCheckbox],
+      assignment: [hasValue, !isCheckable],
       value: [hasValue, targetProperty.value !== isCheckedValue],
     }
 
     toggleFieldVisibility(visibilityConditions, fields)
-    togglePropertyOptions(isCheckbox, targetProperty)
+    togglePropertyOptions(isCheckable, targetProperty)
   },
 }

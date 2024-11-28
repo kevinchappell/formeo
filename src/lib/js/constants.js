@@ -140,6 +140,7 @@ export const SESSION_LOCALE_KEY = `${name}-locale`
 export const ANIMATION_SPEED_BASE = 333
 export const ANIMATION_SPEED_FAST = Math.round(ANIMATION_SPEED_BASE / 2)
 export const ANIMATION_SPEED_SLOW = Math.round(ANIMATION_SPEED_BASE * 2)
+export const ANIMATION_SPEED_SUPER_FAST = Math.round(ANIMATION_SPEED_BASE / 5)
 
 //  Event constants
 export const EVENT_FORMEO_SAVED = 'formeoSaved'

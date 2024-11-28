@@ -11,6 +11,7 @@ import {
   HIGHLIGHT_CLASSNAME,
   LIST_CLASSNAME,
 } from './helpers.mjs'
+import { splitAddress } from '../../common/utils/string.mjs'
 
 /**
  * Autocomplete class
@@ -352,13 +353,34 @@ export default class Autocomplete {
     } = option
 
     if (isAddress(value)) {
-      const isOptions = value.includes('.options.')
-      const [componentAddress, optionIndex] = isOptions ? value.split('.options.') : [value, null]
+      const { componentAddress, isOptionAddress, optionIndex } = splitAddress(value).reduce(
+        (acc, cur) => {
+          if (cur === 'options') {
+            acc.isOptionAddress = true
+            return acc
+          }
+          if (!acc.isOptionAddress) {
+            acc.componentAddress.push(cur)
+            return acc
+          }
+
+          acc.optionIndex = +cur
+
+          return acc
+        },
+        {
+          componentAddress: [],
+          optionIndex: null,
+          isOptionAddress: false,
+        },
+      )
+
       const component = Components.getAddress(componentAddress)
-      if (component.dom) {
+
+      if (component?.dom) {
         component.dom.classList.add(HIGHLIGHT_CLASSNAME)
-        if (optionIndex) {
-          const checkboxes = component.dom.querySelectorAll('.field-preview .f-checkbox')
+        if (isOptionAddress) {
+          const checkboxes = component.dom.querySelectorAll('.field-preview .f-checkbox, .field-preview .f-radio')
           checkboxes[optionIndex]?.classList.add(HIGHLIGHT_CLASSNAME)
         }
       }

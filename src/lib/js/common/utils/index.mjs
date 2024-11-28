@@ -4,11 +4,11 @@ import {
   COMPONENT_TYPE_CLASSNAMES_LOOKUP,
   CHILD_TYPE_MAP,
   ANIMATION_SPEED_SLOW,
-  ANIMATION_SPEED_BASE,
   DEFAULT_FORMDATA,
   INTERNAL_COMPONENT_INDEX_TYPES,
   COMPONENT_INDEX_TYPE_MAP,
   CHILD_TYPE_INDEX_MAP,
+  ANIMATION_SPEED_SUPER_FAST,
 } from '../../constants.js'
 import mergeWith from 'lodash/mergeWith.js'
 
@@ -331,10 +331,10 @@ export function throttle(callback, limit = ANIMATION_SPEED_SLOW) {
  * Creates a debounced function that delays invoking the provided function until after the specified delay.
  *
  * @param {Function} fn - The function to debounce.
- * @param {number} [delay=ANIMATION_SPEED_BASE] - The number of milliseconds to delay invocation.
+ * @param {number} [delay=ANIMATION_SPEED_SUPER_FAST] - The number of milliseconds to delay invocation.
  * @returns {Function} - A new debounced function.
  */
-export function debounce(fn, delay = ANIMATION_SPEED_BASE) {
+export function debounce(fn, delay = ANIMATION_SPEED_SUPER_FAST) {
   let timeoutID
   return function (...args) {
     if (timeoutID) {

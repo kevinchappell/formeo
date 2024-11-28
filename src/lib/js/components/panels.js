@@ -141,7 +141,7 @@ export default class Panels {
       tag: 'h5',
       action: {
         click: evt => {
-          const index = indexOfNode(evt.target, evt.target.parentElement)
+          const index = indexOfNode(evt.target)
           this.nav.setTranslateX(index, false)
           this.nav.groupChange(index)
         },
@@ -226,7 +226,7 @@ export default class Panels {
     const labelWrap = this.labels.firstChild
     const panelTabs = labelWrap.children
     const siblingGroups = this.currentPanel.parentElement.childNodes
-    this.activePanelIndex = indexOfNode(this.currentPanel, groupParent)
+    this.activePanelIndex = indexOfNode(this.currentPanel)
     let offset = { nav: 0, panel: 0 }
     let lastOffset = { ...offset }
 

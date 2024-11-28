@@ -159,7 +159,7 @@ export const componentOptions = autocomplete => {
       const htmlLabel = [`${label} `, countConfig, typeConfig]
       const textLabel = [label, count].join(' ').trim()
 
-      if (component.isCheckbox) {
+      if (component.isCheckable) {
         const componentOptionsList = makeComponentOptionsList(component, autocomplete)
         htmlLabel.push(componentOptionsList)
       }

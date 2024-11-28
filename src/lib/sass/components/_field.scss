@@ -158,7 +158,10 @@
     white-space: normal;
   }
 
-  .f-checkbox.highlight-component {
-    box-shadow: 0 0 2px 1px color.$option-outline-color inset;
+  .f-checkbox,
+  .f-radio {
+    &.highlight-component {
+      box-shadow: 0 0 2px 1px color.$option-outline-color inset;
+    }
   }
 }

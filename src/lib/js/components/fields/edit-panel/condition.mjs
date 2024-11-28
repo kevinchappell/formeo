@@ -70,10 +70,7 @@ export class Condition {
 
   updateDataDebounced = debounce(evtData => {
     events.formeoUpdated(evtData)
-    // Components.setAddress(evtData.dataPath, evtData.value)
-    this.parent.field.data.conditions[0].if[0] = evtData.value
-    console.log(this.parent.field.data.conditions[0].if[0])
-
+    Components.setAddress(evtData.dataPath, evtData.value)
   })
 
   onChangeCondition = ({ key, target }) => {

@@ -10,12 +10,15 @@ export const isInt = n => Number.isInteger(Number(n))
 /**
  * Finds the index of an element in its parent
  * @param {NodeElement} node
- * @param {NodeElement} parent
  */
-export const indexOfNode = (node, parent) => {
-  const parentElement = parent || node.parentElement
-  const nodeList = Array.prototype.slice.call(parentElement.childNodes)
-  return nodeList.indexOf(node)
+export const indexOfNode = node => {
+  let index = 0
+  let currentNode = node
+  while (currentNode.previousElementSibling) {
+    currentNode = currentNode.previousElementSibling
+    index++
+  }
+  return index
 }
 
 /**

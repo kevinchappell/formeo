@@ -51,7 +51,13 @@ export default class EditPanel {
       const key = isArray ? `[${index}]` : `.${dataVal[0]}`
       const val = isArray ? dataVal : { [dataVal[0]]: dataVal[1] }
 
-      return new EditPanelItem({ key: `${this.name}${key}`, data: val, field: this.field, index, panelName: this.name })
+      return new EditPanelItem({
+        key: `${this.name}${key}`,
+        data: val,
+        field: this.field,
+        index,
+        panelName: this.name,
+      })
     })
     const editGroupConfig = {
       tag: 'ul',
