@@ -30,8 +30,6 @@ export default class Autocomplete {
     this.value = value
     this.onChange = onChange || noop
     this.events = []
-    this._styleProxy = null
-    this._classListProxy = null
 
     this.build()
   }

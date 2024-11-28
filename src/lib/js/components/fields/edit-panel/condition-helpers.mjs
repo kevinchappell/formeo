@@ -184,35 +184,43 @@ function createConditionSelect({ key, value, onChange }) {
   return propertyFieldConfig
 }
 
-export const conditionFieldHandlers = {
-  source: (target, fields) => {
-    const fieldsToToggleVisibility = ['sourceProperty', 'comparison', 'targetProperty', 'target']
+const hiddenPropertyClassname = 'hidden-property'
+const hiddenOptionClassname = 'hidden-option'
+const optionsAddressRegex = /\.options\.\d+$/
 
-    for (const fieldName of fieldsToToggleVisibility) {
-      fields.get(fieldName)?.classList.toggle('hidden-property', !target.value)
+export const conditionFieldHandlers = {
+  source: (field, fields) => {
+    const hasValue = !!field.value
+    const isCheckbox = !!field.value.match(optionsAddressRegex)
+    const sourceProperty = fields.get('sourceProperty')
+    const target = fields.get('target')
+    const visibilityConditions = {
+      sourceProperty: [hasValue],
+      comparison: [hasValue, !isCheckbox],
+      target: [hasValue],
+      targetProperty: [hasValue, target.value],
     }
 
-    const sourceProperty = fields.get('sourceProperty')
-    if (isInternalAddress(target.value)) {
-      const component = Components.getAddress(target.value)
-      const isCheckbox = component.isCheckbox
-      const options = sourceProperty.querySelectorAll('option')
+    for (const [fieldName, conditions] of Object.entries(visibilityConditions)) {
+      fields.get(fieldName)?.classList.toggle(hiddenPropertyClassname, !conditions.every(Boolean))
+    }
 
-      for (const option of options) {
-        const isChecked = option.value === 'isChecked'
-        if (isCheckbox) {
-          option.classList.toggle('hidden-property', !isChecked)
-        } else {
-          option.classList.toggle('hidden-property', isChecked)
-        }
-      }
+    const options = sourceProperty.querySelectorAll('option')
 
-      if (!isCheckbox) {
-        const firstNotIsChecked = sourceProperty.querySelector('option:not([value="isChecked"])')
-        sourceProperty.value = firstNotIsChecked.value
+    for (const option of options) {
+      const isChecked = option.value === 'isChecked'
+      if (isCheckbox) {
+        option.classList.toggle(hiddenOptionClassname, !isChecked)
       } else {
-        sourceProperty.value = 'isChecked'
+        option.classList.toggle(hiddenOptionClassname, isChecked)
       }
+    }
+
+    if (!isCheckbox) {
+      const firstNotIsChecked = sourceProperty.querySelector('option:not([value="isChecked"])')
+      sourceProperty.value = firstNotIsChecked.value
+    } else {
+      sourceProperty.value = 'isChecked'
     }
   },
 }

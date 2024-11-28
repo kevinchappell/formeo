@@ -227,7 +227,7 @@
   }
 
   [class^="condition-"] {
-    max-width: 100%;
+    max-width: 50%;
     transition: max-width var.$animation-speed-base;
     will-change: max-width;
   }
@@ -359,10 +359,6 @@
 
 .field-edit-group {
   @include mixins.no-list-style;
-}
-
-.hidden-property {
-  display: none;
 }
 
 .options-panel {
