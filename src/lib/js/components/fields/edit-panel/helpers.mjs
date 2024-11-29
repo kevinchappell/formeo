@@ -65,7 +65,7 @@ export const INPUT_TYPE_ACTION = {
           field.data.options.map(option => ({ ...option, selected: false })),
         )
       }
-      debugger
+
       field.set(dataKey, checked)
     },
   }),

@@ -143,33 +143,6 @@ export class Components extends Data {
 
     return localAddress.length ? component.get(localAddress) : component
   }
-
-  getConditionMap(address) {
-    if (isAddress(address)) {
-      return (
-        splitAddress(address).every(segment => Boolean(segment)) &&
-        this[splitAddress[0]].conditionMap.get(splitAddress[1])
-      )
-    }
-  }
-
-  setConditionMap(address, component) {
-    if (isAddress(address)) {
-      return (
-        splitAddress(address).every(segment => Boolean(segment)) &&
-        this[splitAddress[0]].conditionMap.set(splitAddress[1], component)
-      )
-    }
-  }
-
-  removeConditionMap(address) {
-    if (isAddress(address)) {
-      return (
-        splitAddress(address).every(segment => Boolean(segment)) &&
-        this[splitAddress[0]].conditionMap.delete(splitAddress[1])
-      )
-    }
-  }
 }
 
 const components = new Components()
