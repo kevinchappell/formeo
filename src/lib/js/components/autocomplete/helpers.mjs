@@ -57,13 +57,16 @@ const labelResolverMap = new Map([
  * @return {String} component label
  */
 export const getComponentLabel = ({ id, ...component }, key) => {
-  const { name } = component.name
+  const { name, label } = component
+  if (!name) {
+    return label
+  }
   const labelResolver = labelResolverMap.get(key)
-  const label = labelResolver(component)
+  const resolvedLabel = labelResolver(component)
   const externalLabel = (...externalAddress) =>
     i18n.get(externalAddress.join('.')) || toTitleCase(externalAddress.join(' '))
 
-  return label || (name === 'external' && externalLabel(name, id))
+  return resolvedLabel || (name === 'external' && externalLabel(name, id))
 }
 
 const makeOptionData = ({ selectedId, ...option }) => {
@@ -82,7 +85,7 @@ const realTarget = target => {
   return target
 }
 
-const makeListItem = ({ value, textLabel, htmlLabel, componentType }, autocomplete) => {
+const makeListItem = ({ value, textLabel, htmlLabel, componentType, depth = 0 }, autocomplete) => {
   const optionConfig = {
     tag: 'li',
     children: htmlLabel,
@@ -90,7 +93,7 @@ const makeListItem = ({ value, textLabel, htmlLabel, componentType }, autocomple
       value,
       label: textLabel,
     },
-    className: [LIST_ITEM_CLASSNAME, `component-type-${componentType}`],
+    className: [LIST_ITEM_CLASSNAME, `${LIST_ITEM_CLASSNAME}-depth-${depth}`, `component-type-${componentType}`],
     action: {
       mousedown: ({ target }) => {
         target = realTarget(target)
@@ -117,7 +120,7 @@ const makeComponentOptionsList = (component, autocomplete) => {
     const value = `${component.address}.options[${index}]`
     const textLabel = option.label
     const htmlLabel = option.label
-    return makeListItem({ value, textLabel, htmlLabel, componentType: 'option' }, autocomplete)
+    return makeListItem({ value, textLabel, htmlLabel, componentType: 'option', depth: 1 }, autocomplete)
   })
 
   const list = dom.create({

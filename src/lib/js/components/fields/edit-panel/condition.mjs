@@ -27,7 +27,6 @@ export class Condition {
   }
 
   generateDom() {
-    // const orderedValues = new Map(orderConditionValues(conditionValues))
     const label = {
       tag: 'label',
       className: `condition-label ${this.conditionType}-condition-label`,

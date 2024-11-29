@@ -38,7 +38,7 @@ export default class Field extends Component {
     const actionButtons = this.getActionButtons()
     const hasEditButton = this.actionButtons.some(child => child.meta?.id === 'edit')
 
-    let field = {
+    const field = dom.create({
       tag: 'li',
       attrs: {
         className: FIELD_CLASSNAME,
@@ -55,15 +55,12 @@ export default class Field extends Component {
       dataset: {
         hoverTag: i18n.get('field'),
       },
-    }
+    })
 
-    field = dom.create(field)
     this.observe(field)
 
     this.dom = field
     this.isEditing = false
-    this.onRender(field)
-    this.debouncedUpdatePreview()
   }
 
   get labelConfig() {
@@ -154,8 +151,9 @@ export default class Field extends Component {
     if (!this.label) {
       return null
     }
+
     const newLabel = dom.create(this.labelConfig)
-    this.label.parentElement.replaceChild(newLabel, this.label)
+    this.label.replaceWith(newLabel)
     this.label = newLabel
   }
 
@@ -178,7 +176,7 @@ export default class Field extends Component {
    */
   updatePreview = () => {
     this.updateLabel()
-    const newPreview = dom.create(this.fieldPreview(), true)
+    const newPreview = this.fieldPreview()
     this.preview.replaceWith(newPreview)
     this.preview = newPreview
   }
@@ -325,7 +323,7 @@ export default class Field extends Component {
       action: this.defaultPreviewActions,
     }
 
-    return fieldPreview
+    return dom.create(fieldPreview, true)
   }
 
   /**

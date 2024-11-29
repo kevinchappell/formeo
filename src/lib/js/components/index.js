@@ -137,6 +137,10 @@ export class Components extends Data {
     const componentIndex = this.getIndex(type)
     const component = componentIndex.get(id)
 
+    if (localAddress.length && !component) {
+      return
+    }
+
     return localAddress.length ? component.get(localAddress) : component
   }
 

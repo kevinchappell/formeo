@@ -68,10 +68,6 @@ export class Controls {
         control = new Control(Element)
       }
 
-      // not a fan of this pattern but its better
-      // than passing controls through Element constructor
-      // control.parent = this
-
       this.add(control)
       this.controls.push(control.dom)
 

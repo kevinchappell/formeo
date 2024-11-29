@@ -10,6 +10,7 @@ import {
   getComponentLabel,
   HIGHLIGHT_CLASSNAME,
   LIST_CLASSNAME,
+  LIST_ITEM_CLASSNAME,
 } from './helpers.mjs'
 import { splitAddress } from '../../common/utils/string.mjs'
 
@@ -132,7 +133,10 @@ export default class Autocomplete {
       focus: ({ target }) => {
         this.updateOptions()
         target.parentElement.classList.add(`${this.className}-focused`)
-        const filteredOptions = dom.toggleElementsByStr(this.list.querySelectorAll('li'), target.value)
+        const filteredOptions = dom.toggleElementsByStr(
+          this.list.querySelectorAll(`.${LIST_ITEM_CLASSNAME}-depth-0`),
+          target.value,
+        )
         target.addEventListener('keydown', keyboardNav)
         const selectedOption = this.list.querySelector('.active-option') || filteredOptions[0]
         this.showList(selectedOption)
@@ -198,6 +202,7 @@ export default class Autocomplete {
           if (this.value) {
             this.displayField.value = this.label
           }
+          this.clearButton.classList.toggle('hidden', !this.value.length)
         },
       },
     })
@@ -206,6 +211,9 @@ export default class Autocomplete {
   }
 
   get label() {
+    if (!isAddress(this.value)) {
+      return this.value
+    }
     const component = this.value && Components.getAddress(this.value)
     return (component && getComponentLabel(component, `${this.key}`)) || this.value
   }

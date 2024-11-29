@@ -93,7 +93,7 @@ function createConditionSelect({ key, value, onChange }) {
 
 const hiddenPropertyClassname = 'hidden-property'
 const hiddenOptionClassname = 'hidden-option'
-const optionsAddressRegex = /\.options\.\d+$/
+const optionsAddressRegex = /\.options\[\d+\]$/
 
 const toggleFieldVisibility = (fieldConditions, fields) => {
   for (const [fieldName, conditions] of Object.entries(fieldConditions)) {

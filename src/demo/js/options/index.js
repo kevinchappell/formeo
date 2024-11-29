@@ -30,11 +30,17 @@ export const editorOptions = {
   onLoad: () => {
     const firstField = document.querySelector('.formeo-field')
     if (firstField) {
-      firstField.querySelector('.item-edit-toggle').click()
-      firstField.querySelector('.panel-labels').children[0].lastChild.click()
+      // firstField.querySelector('.item-edit-toggle').click()
+      // firstField.querySelector('.panel-labels')?.children[0].lastChild.click()
     }
   },
 }
+
+// document.addEventListener('formeoLoaded', evt => {
+//   // events.opts.formeoLoaded(evt.detail.formeo)
+//   console.log('loaded')
+//   // this.processUiState()
+// })
 
 export const renderOptions = {
   renderContainer,

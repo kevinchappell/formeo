@@ -1,7 +1,7 @@
 import isEqual from 'lodash/isEqual'
 import dom from './common/dom'
 import { uuid, isAddress, isExternalAddress, merge, cleanFormData } from './common/utils/index.mjs'
-import { STAGE_CLASSNAME, UUID_REGEXP } from './constants'
+import { COMPARISON_OPERATORS, STAGE_CLASSNAME, UUID_REGEXP } from './constants'
 import { fetchDependencies } from './common/loaders'
 
 const RENDER_PREFIX = 'f-'
@@ -36,6 +36,21 @@ const createRemoveButton = () =>
       },
     }),
   )
+
+const comparisonHandlers = {
+  equals: isEqual,
+  notEquals: (source, target) => !isEqual(source, target),
+  contains: (source, target) => source.includes(target),
+  notContains: (source, target) => !source.includes(target),
+}
+
+const comparisonMap = Object.entries(COMPARISON_OPERATORS).reduce((acc, [key, value]) => {
+  // support and new comparison operators for backwards compatibility
+  acc[value] = comparisonHandlers[key]
+  acc[key] = comparisonHandlers[key]
+
+  return acc
+}, {})
 
 export default class FormeoRenderer {
   constructor(opts, formDataArg) {
@@ -255,13 +270,6 @@ export default class FormeoRenderer {
    * Evaulate conditions
    */
   evaluateCondition = ({ sourceProperty, targetProperty, comparison, target }, evt) => {
-    const comparisonMap = {
-      equals: isEqual,
-      notEquals: (source, target) => !isEqual(source, target),
-      contains: (source, target) => source.includes(target),
-      notContains: (source, target) => !source.includes(target),
-    }
-
     // Compare as string, this allows values like "true" to be checked for properties like "checked".
     const sourceValue = String(evt.target[sourceProperty])
     const targetValue = String(isAddress(target) ? this.getComponent(target)[targetProperty] : target)
@@ -288,6 +296,14 @@ export default class FormeoRenderer {
       },
     }
 
+    const targetPropertyMap = {
+      isChecked: elem => {
+        elem.checked = value
+      }
+    }
+
+    // debugger
+
     if (isAddress(target)) {
       const elem = this.getComponent(target)
 
@@ -295,7 +311,9 @@ export default class FormeoRenderer {
       if (elem && elem._required === undefined) {
         elem._required = elem.required
       }
-      assignMap[assignment]?.(elem)
+
+      targetPropertyMap[targetProperty]?.(elem)
+      // assignMap[assignment]?.(elem)
     }
   }
 

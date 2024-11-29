@@ -77,13 +77,12 @@ export default class EditPanel {
    * @return {Object} panel edit buttons config
    */
   createEditButtons() {
-    const _this = this
     const type = this.name
     const btnTitle = i18n.get(`panelEditButtons.${type}`)
     const addActions = {
-      attrs: _this.addAttribute,
-      options: _this.addOption,
-      conditions: _this.addCondition,
+      attrs: this.addAttribute,
+      options: this.addOption,
+      conditions: this.addCondition,
     }
     const addBtn = {
       ...dom.btnTemplate({ content: btnTitle, title: btnTitle }),
@@ -96,8 +95,8 @@ export default class EditPanel {
           }
 
           if (type === 'attrs') {
-            addEvt.isDisabled = _this.field.isDisabledProp
-            addEvt.isLocked = _this.field.isLockedProp
+            addEvt.isDisabled = this.field.isDisabledProp
+            addEvt.isLocked = this.field.isLockedProp
             addEvt.message = {
               attr: i18n.get(`action.add.${type}.attr`),
               value: i18n.get(`action.add.${type}.value`),

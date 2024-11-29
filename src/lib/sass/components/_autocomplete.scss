@@ -98,5 +98,9 @@
     left: 100%;
     top: 0;
     width: 75%;
+    min-height: 100%;
+    li {
+      display: block;
+    }
   }
 }
