@@ -62,15 +62,79 @@ export default class FormeoRenderer {
     this.elements = elements
   }
 
+  get formData() {
+    return this.form
+  }
+  set formData(data) {
+    this.form = cleanFormData(data)
+  }
+  get userData() {
+    const userData = new FormData(this.renderedForm)
+
+    const formDataObj = {}
+    for (const [key, value] of userData.entries()) {
+      // If key already exists, convert to array
+      if (formDataObj[key]) {
+        if (Array.isArray(formDataObj[key])) {
+          formDataObj[key].push(value)
+        } else {
+          formDataObj[key] = [formDataObj[key], value]
+        }
+      } else {
+        formDataObj[key] = value
+      }
+    }
+
+    return formDataObj
+  }
+  set userData(data = {}) {
+    const form = this.container.querySelector('form')
+    for (const key of Object.keys(data)) {
+      const fields = form.elements[key]
+
+      // Handle checkbox groups
+      if (fields.length && fields[0].type === 'checkbox') {
+        // Convert to array if not already
+        const values = Array.isArray(data[key]) ? data[key] : [data[key]]
+
+        for (const field of fields) {
+          field.checked = values.includes(field.value)
+        }
+      }
+      // Handle radio groups
+      else if (fields.length && fields[0].type === 'radio') {
+        for (const field of fields) {
+          field.checked = field.value === data[key]
+        }
+      }
+      // Handle single inputs
+      else if (fields.type) {
+        fields.value = data[key]
+      }
+    }
+  }
+
   /**
    * Renders the formData to a target Element
    * @param {Object} formData
    */
-  render = (formData = this.form) => {
+  render(formData = this.form) {
+    const renderedForm = this.getRenderedForm(formData)
+    const existingRenderedForm = this.container.querySelector('.formeo-render')
+
+    if (existingRenderedForm) {
+      existingRenderedForm.replaceWith(renderedForm)
+    } else {
+      this.container.appendChild(renderedForm)
+    }
+  }
+
+  getRenderedForm(formData = this.form) {
     this.form = cleanFormData(formData)
 
     const renderCount = document.getElementsByClassName('formeo-render').length
     const config = {
+      tag: 'form',
       id: this.form.id,
       className: `formeo-render formeo formeo-rendered-${renderCount}`,
       children: this.processedData,
@@ -80,13 +144,12 @@ export default class FormeoRenderer {
 
     this.applyConditions()
 
-    const existingRenderedForm = this.container.querySelector('.formeo-render')
+    return this.renderedForm
+  }
 
-    if (existingRenderedForm) {
-      existingRenderedForm.replaceWith(this.renderedForm)
-    } else {
-      this.container.appendChild(this.renderedForm)
-    }
+  get html() {
+    const renderedForm = this.renderedForm || this.getRenderedForm()
+    return renderedForm.outerHTML
   }
 
   orderChildren = (type, order) =>

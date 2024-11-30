@@ -19,28 +19,40 @@ const popover = document.getElementById('formData-popover')
 
 const editorActionButtonContainer = document.getElementById('editor-action-buttons')
 const renderFormWrap = document.querySelector('.render-form')
-const editorActions = (editor, renderer) => ({
-  renderForm: () => {
-    renderFormWrap.style.display = 'block'
-    renderer.render(editor.formData)
-  },
-  logJSON: () => console.log(JSON.stringify(JSON.parse(editor.json), null, 2)),
-  viewData: () => {
-    for (const [key, val] of Object.entries(editor.formData)) {
-      console.log(key, val)
-    }
-  },
-  resetEditor: () => {
-    window.sessionStorage.removeItem('formeo-formData')
-    window.location.reload()
-  },
-  testData: () => {
-    jsonEditor.setValue(JSON.stringify(editor.formData, null, 2), 1)
-  },
-})
+const editorActions = (editor, renderer) => {
+  return {
+    renderForm: () => {
+      renderFormWrap.style.display = 'block'
+      renderer.render(editor.formData)
+    },
+    // logJSON: () => console.log(JSON.stringify(JSON.parse(editor.json), null, 2)),
+    // viewData: () => {
+    //   for (const [key, val] of Object.entries(editor.formData)) {
+    //     console.log(key, val)
+    //   }
+    // },
+    getHtml: () => {
+      renderer.formData = editor.formData
+      const html = renderer.html
+      const win = window.open('', '_blank')
+      win.document.body.innerHTML = html
+    },
+    getUserData: () => {
+      // renderer.getRenderedForm(editor.formData)
+      console.log(renderer.userData)
+    },
+    resetEditor: () => {
+      window.sessionStorage.removeItem('formeo-formData')
+      window.location.reload()
+    },
+    editData: () => {
+      jsonEditor.setValue(JSON.stringify(editor.formData, null, 2), 1)
+    },
+  }
+}
 
 const buttonIdAttrsMap = {
-  testData: { popovertarget: 'formData-popover' },
+  editData: { popovertarget: 'formData-popover' },
 }
 const getButtonAttrs = id => {
   const attrs = buttonIdAttrsMap[id] || {}
