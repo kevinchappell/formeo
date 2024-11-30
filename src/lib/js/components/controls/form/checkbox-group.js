@@ -19,7 +19,7 @@ class CheckboxGroupControl extends Control {
         icon: 'checkbox',
         id: 'checkbox',
       },
-      options: generateOptionConfig('checkbox', 1),
+      options: generateOptionConfig({ type: 'checkbox', count: 1 }),
     }
     super(checkboxGroup)
   }

@@ -58,30 +58,32 @@ export const ITEM_INPUT_TYPE_MAP = {
 
 export const INPUT_TYPE_ACTION = {
   boolean: (dataKey, field) => ({
-    click: ({ target: { checked } }) => {
-      if (field.data?.attrs?.type === 'radio') {
-        field.set(
-          'options',
-          field.data.options.map(option => ({ ...option, selected: false })),
-        )
+    click: ({ target }) => {
+      if (target.type === 'radio') {
+        const updatedOptions = field.data.options.map(option => ({ ...option, selected: false }))
+        field.set('options', updatedOptions)
       }
 
-      field.set(dataKey, checked)
+      field.set(dataKey, target.checked)
+      field.updatePreview()
     },
   }),
   string: (dataKey, field) => ({
     input: ({ target: { value } }) => {
       field.set(dataKey, value)
+      field.debouncedUpdatePreview()
     },
   }),
   number: (dataKey, field) => ({
     input: ({ target: { value } }) => {
       field.set(dataKey, Number(value))
+      field.debouncedUpdatePreview()
     },
   }),
   array: (dataKey, field) => ({
     change: ({ target: { value } }) => {
       field.set(dataKey, value)
+      field.debouncedUpdatePreview()
     },
   }),
   object: () => ({}),

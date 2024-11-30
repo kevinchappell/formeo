@@ -46,7 +46,7 @@ class DOM {
    * @param  {Object|String} elem
    * @return {Object} valid element object
    */
-  processTagName(elemArg) {
+  processElemArg(elemArg) {
     let elem = elemArg
     let tagName
     if (typeof elem === 'string') {
@@ -96,14 +96,14 @@ class DOM {
 
     const _this = this
     const processed = ['children', 'content']
-    const { className, options, dataset, ...elem } = this.processTagName(elemArg)
+    const { className, options, dataset, conditions, ...elem } = this.processElemArg(elemArg)
     processed.push('tag')
     let childType
     const { tag } = elem
     let i
     const wrap = {
       attrs: {},
-      className: [h.get(elem, 'config.inputWrap') || 'f-field-group'],
+      className: [h.get(elem, 'config.inputWrap')],
       children: [],
       config: {},
     }
@@ -185,6 +185,9 @@ class DOM {
           if (_this.labelAfter(elem)) {
             wrapContent.reverse()
           }
+          // if has label config, must be a field.
+          // @todo change this logic so dom.create is project agnostic
+          wrap.className.push('formeo-field')
           wrap.children.push(wrapContent)
         }
       }
@@ -351,13 +354,24 @@ class DOM {
 
       const value = this.processAttrValue(attrs[attr])
 
-      if (value) {
-        element.setAttribute(safeAttrName, value === true ? '' : value)
+      if (value !== false) {
+        element.setAttribute(safeAttrName, value)
       }
     }
   }
 
   processAttrValue(valueArg) {
+    if (typeof valueArg === 'function') {
+      return valueArg()
+    }
+
+    if (typeof valueArg === 'boolean') {
+      if (valueArg) {
+        return ''
+      }
+      return valueArg
+    }
+
     let value = valueArg || ''
     if (Array.isArray(value)) {
       if (typeof value[0] === 'object') {
@@ -455,9 +469,6 @@ class DOM {
           attrs: {
             for: `${id}-${i}`,
           },
-          config: {
-            inputWrap: 'form-check',
-          },
           children: option.label,
         }
         const inputWrap = {
@@ -486,10 +497,12 @@ class DOM {
 
       const optionMarkup = {
         select: () => {
+          const { label, attrs: coalescedAttrs = option } = option
+          const { checked, selected, ...attrs } = coalescedAttrs
           return {
             tag: 'option',
-            attrs: option.attrs || option,
-            children: option.label,
+            attrs: { ...attrs, selected: !!(checked || selected) },
+            children: label,
           }
         },
         button: option => {

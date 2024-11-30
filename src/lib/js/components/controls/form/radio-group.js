@@ -19,7 +19,7 @@ class RadioGroupControl extends Control {
         icon: 'radio-group',
         id: 'radio',
       },
-      options: generateOptionConfig('radio'),
+      options: generateOptionConfig({ type: 'radio' }),
     }
     super(radioGroup)
   }

@@ -2,12 +2,44 @@ import { orderObjectsBy } from '../../../common/helpers.mjs'
 import dom from '../../../common/dom.js'
 import animate from '../../../common/animation.js'
 
-import { slugify, slugifyAddress, toTitleCase } from '../../../common/utils/string.mjs'
+import { slugifyAddress, toTitleCase } from '../../../common/utils/string.mjs'
 import { Condition } from './condition.mjs'
 import { INPUT_TYPE_ACTION, ITEM_INPUT_TYPE_MAP, labelHelper } from './helpers.mjs'
-import { set } from '../../../common/utils/object.mjs'
+import { merge } from '../../../common/utils/index.mjs'
+import { mergeActions } from '../../../common/utils/object.mjs'
 
-const INPUT_ORDER = ['selected', 'checked']
+const checkedTypes = ['selected', 'checked']
+const reversedCheckedTypes = checkedTypes.toReversed()
+
+const panelDataKeyMap = new Map([
+  ['attrs', ({ itemKey }) => itemKey],
+  ['options', ({ itemKey, key }) => `${itemKey}.${key}`],
+])
+
+export const toggleOptionMultiSelect = (isMultiple, field) => {
+  if (field.controlId === 'select') {
+    const optionsPanel = field.editPanels.get('options')
+    const [fromCheckedType, toCheckedType] = isMultiple ? checkedTypes : reversedCheckedTypes
+    const updatedOptionsData = optionsPanel.data.map(({ [fromCheckedType]: val, ...option }) => ({
+      [toCheckedType]: val,
+      ...option,
+    }))
+    optionsPanel.setData(updatedOptionsData)
+  }
+}
+
+const itemInputActions = new Map([
+  [
+    'attrs-multiple',
+    editPanelItem => ({
+      change: ({ target }) => {
+        if (editPanelItem.field.controlId === 'select') {
+          toggleOptionMultiSelect(target.checked, editPanelItem.field)
+        }
+      },
+    }),
+  ],
+])
 
 /**
  * Edit Panel Item
@@ -20,19 +52,20 @@ export default class EditPanelItem {
    * @param  {String} field
    * @return {Object} field object
    */
-  constructor({ key, data, index, field, panelName }) {
-    this.itemValues = orderObjectsBy(Object.entries(data), INPUT_ORDER, '0')
+  constructor({ key, data, index, field, panel }) {
+    this.itemValues = orderObjectsBy(Object.entries(data), checkedTypes, '0')
     this.field = field
     this.itemKey = key
     this.itemIndex = index
-    this.panelName = panelName
-    this.isDisabled = field.isDisabledProp(key, panelName)
-    this.isHidden = this.isDisabled && field.config.panels[panelName].hideDisabled
-    this.isLocked = field.isLockedProp(key, panelName)
+    this.panel = panel
+    this.panelName = panel.name
+    this.isDisabled = field.isDisabledProp(key, this.panelName)
+    this.isHidden = this.isDisabled && field.config.panels[this.panelName].hideDisabled
+    this.isLocked = field.isLockedProp(key, this.panelName)
     this.address = `${field.indexName}.${field.id}.${key}`
-    const itemSlug = slugifyAddress(key)
+    this.itemSlug = slugifyAddress(key)
 
-    const liClassList = [`field-${itemSlug}`, 'prop-wrap']
+    const liClassList = [`field-${this.itemSlug}`, 'prop-wrap']
     if (this.isHidden) {
       liClassList.push('hidden-property')
     }
@@ -110,32 +143,30 @@ export default class EditPanelItem {
 
   itemInput(key, value) {
     const valType = dom.childType(value) || 'string'
-
-    const inputTypeConfig = { ...{ config: {}, attrs: {} }, ...ITEM_INPUT_TYPE_MAP[valType]({ key, value }) }
-    const dataKey = this.itemKey
+    const dataKey = panelDataKeyMap.get(this.panelName)?.({ itemKey: this.itemKey, key }) || this.itemKey
     const labelKey = dataKey.split('.').filter(Number.isNaN).join('.') || key
-
-    inputTypeConfig.config = {
-      ...inputTypeConfig.config,
-      ...{
-        label: this.panelName !== 'options' && (labelHelper(labelKey) || toTitleCase(labelKey)),
-        labelAfter: false,
-      },
+    const baseConfig = ITEM_INPUT_TYPE_MAP[valType]({ key, value })
+    const name = `${this.field.shortId}-${slugifyAddress(dataKey).replace(/-\d+-(selected)/g, '-$1')}`
+    const config = {
+      label: this.panelName !== 'options' && (labelHelper(labelKey) || toTitleCase(labelKey)),
+      labelAfter: false,
+    }
+    const attrs = {
+      name: baseConfig.attrs.type === 'checkbox' ? `${name}[]` : name,
     }
 
-    inputTypeConfig.attrs = {
-      ...inputTypeConfig.attrs,
-      ...{
-        name: null,
-        disabled: this.isDisabled,
-        locked: this.isLocked,
-      },
+    if (this.isDisabled) {
+      attrs.disabled = true
     }
 
-    inputTypeConfig.action = {
-      ...INPUT_TYPE_ACTION[valType](dataKey, this.field),
+    if (this.isLocked) {
+      attrs.locked = true
     }
 
-    return inputTypeConfig
+    const itemInputAction = itemInputActions.get(this.itemSlug)?.(this)
+
+    const action = mergeActions(INPUT_TYPE_ACTION[valType](dataKey, this.field), itemInputAction || {})
+
+    return merge(ITEM_INPUT_TYPE_MAP[valType]({ key, value }), { action, attrs, config })
   }
 }

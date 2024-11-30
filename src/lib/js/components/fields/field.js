@@ -1,11 +1,10 @@
 import i18n from '@draggable/i18n'
 import dom from '../../common/dom.js'
 import Panels from '../panels.js'
-import { clone, debounce, throttle, unique } from '../../common/utils/index.mjs'
+import { clone, debounce, unique } from '../../common/utils/index.mjs'
 import EditPanel from './edit-panel/edit-panel.js'
 import Component from '../component.js'
-import { FIELD_CLASSNAME, CONDITION_TEMPLATE, ANIMATION_SPEED_BASE } from '../../constants.js'
-import Components from '../index.js'
+import { FIELD_CLASSNAME, CONDITION_TEMPLATE } from '../../constants.js'
 import { toTitleCase } from '../../common/utils/string.mjs'
 import controls from '../controls/index.js'
 import { indexOfNode } from '../../common/helpers.mjs'
@@ -14,7 +13,8 @@ const DEFAULT_DATA = () => ({
   conditions: [CONDITION_TEMPLATE()],
 })
 
-const chackableTypes = new Set(['checkbox', 'radio'])
+const checkableTypes = new Set(['checkbox', 'radio'])
+const isSelectableType = new Set(['radio', 'checkbox', 'select-one', 'select-multiple'])
 
 /**
  * Element/Field class.
@@ -32,8 +32,9 @@ export default class Field extends Component {
     this.debouncedUpdatePreview = debounce(this.updatePreview)
 
     this.label = dom.create(this.labelConfig)
-    this.preview = dom.create({})
-    this.editPanels = []
+    this.preview = this.fieldPreview()
+    this.editPanels = new Map()
+    this.controlId = this.get('config.controlId') || this.get('meta.id')
 
     const actionButtons = this.getActionButtons()
     const hasEditButton = this.actionButtons.some(child => child.meta?.id === 'edit')
@@ -92,8 +93,8 @@ export default class Field extends Component {
     const label = {
       ...labelConfig(),
       action: {
-        input: ({ target: { innerHTML, innerText, value } }) => {
-          super.set('config.label', disableHTML ? value : innerHTML)
+        input: ({ target: { innerHTML, innerText } }) => {
+          super.set('config.label', disableHTML ? innerText : innerHTML)
         },
       },
     }
@@ -110,7 +111,7 @@ export default class Field extends Component {
    * Updates a source field's label without recreating conditions dom
    */
   updateConditionSourceLabel(value, label) {
-    const newConditionsPanel = this.editPanels.find(({ name }) => name === 'conditions')
+    const newConditionsPanel = this.editPanels.get('conditions')
     if (!newConditionsPanel) {
       return null
     }
@@ -123,18 +124,6 @@ export default class Field extends Component {
         }
       }
     }
-  }
-
-  /**
-   * wrapper for Data.set
-   */
-  set(...args) {
-    const [path, value] = args
-
-    const data = super.set(path, value)
-    this.debouncedUpdatePreview()
-
-    return data
   }
 
   /**
@@ -151,19 +140,6 @@ export default class Field extends Component {
   }
 
   /**
-   * Updates the conditions panel when linked field data changes
-   */
-  updateConditionsPanel = throttle(() => {
-    const newConditionsPanel = this.editPanels.find(({ name }) => name === 'conditions')
-    if (!newConditionsPanel) {
-      return null
-    }
-    const newProps = newConditionsPanel.createProps()
-    const currentConditionsProps = this.dom.querySelector('.field-edit-conditions')
-    currentConditionsProps.parentElement.replaceChild(newProps, currentConditionsProps)
-  }, ANIMATION_SPEED_BASE)
-
-  /**
    * Updates a field's preview
    * @return {Object} fresh preview
    */
@@ -175,7 +151,6 @@ export default class Field extends Component {
   }
 
   updateEditPanels = () => {
-    this.editPanels = []
     const editable = ['object', 'array']
     const panelOrder = unique([...this.config.panels.order, ...Object.keys(this.data)])
     const noPanels = ['config', 'meta', 'action', 'events', ...this.config.panels.disabled]
@@ -186,12 +161,12 @@ export default class Field extends Component {
       const propType = dom.childType(panelData)
       if (editable.includes(propType)) {
         const editPanel = new EditPanel(panelData, panelName, this)
-        this.editPanels.push(editPanel)
+        this.editPanels.set(editPanel.name, editPanel)
       }
     }
 
     const panelsData = {
-      panels: this.editPanels.map(({ panelConfig }) => panelConfig),
+      panels: Array.from(this.editPanels.values()).map(({ panelConfig }) => panelConfig),
       id: this.id,
       displayType: 'auto',
     }
@@ -213,7 +188,7 @@ export default class Field extends Component {
     }
     this.updateEditPanels()
 
-    const editPanelLength = this.editPanels.length
+    const editPanelLength = this.editPanels.size
 
     if (editPanelLength) {
       fieldEdit.className.push(`panel-count-${editPanelLength}`)
@@ -241,30 +216,28 @@ export default class Field extends Component {
     return dom.create(fieldEdit)
   }
 
-  toggleCheckedOptions = (optionIndex, type) => {
-    const updatedOptionData = this.get('options').map((option, index) => {
-      const isCurrentIndex = index === optionIndex
-      if (type === 'radio') {
-        option.selected = isCurrentIndex
-      } else {
-        option.checked = isCurrentIndex ? !option.checked : option.checked
-      }
-
-      return option
-    })
-
-    super.set('options', updatedOptionData)
-  }
-
   get defaultPreviewActions() {
     return {
       change: evt => {
         const { target } = evt
         const { type } = target
-        if (['checkbox', 'radio'].includes(type)) {
-          const optionIndex = indexOfNode(target.parentElement)
-          this.toggleCheckedOptions(optionIndex, type)
-          this.debouncedUpdateEditPanels()
+
+        if (isSelectableType.has(type)) {
+          const selectedOptions = this.preview.querySelectorAll(':checked')
+          const optionsData = this.get('options')
+          const checkedType = optionsData?.[0]?.selected !== undefined ? 'selected' : 'checked'
+          const optionsDataMap = optionsData.reduce((acc, option) => {
+            acc[option.value] = option
+            acc[option.value][checkedType] = false
+            return acc
+          }, {})
+
+          for (const option of selectedOptions) {
+            optionsDataMap[option.value][checkedType] = option.value === optionsDataMap[option.value].value
+          }
+
+          super.set('options', Object.values(optionsDataMap))
+          return this.debouncedUpdateEditPanels()
         }
       },
       click: evt => {
@@ -272,24 +245,24 @@ export default class Field extends Component {
           evt.preventDefault()
         }
       },
-      input: evt => {
-        if (['input', 'meter', 'progress', 'button'].includes(evt.target.tagName.toLowerCase())) {
-          super.set('attrs.value', evt.target.value)
+      input: ({ target }) => {
+        if (['input', 'meter', 'progress', 'button'].includes(target.tagName.toLowerCase())) {
+          super.set('attrs.value', target.value)
           return this.debouncedUpdateEditPanels()
         }
 
-        if (evt.target.contentEditable) {
-          const parentClassList = evt.target.parentElement.classList
+        if (target.contentEditable && !target.type.startsWith('select-')) {
+          const parentClassList = target.parentElement.classList
           const isOption = parentClassList.contains('f-checkbox') || parentClassList.contains('f-radio')
 
           if (isOption) {
-            const option = evt.target.parentElement
+            const option = target.parentElement
             const optionIndex = indexOfNode(option)
-            super.set(`options[${optionIndex}].label`, evt.target.innerHTML)
+            super.set(`options[${optionIndex}].label`, target.innerHTML)
             return this.debouncedUpdateEditPanels()
           }
 
-          super.set('content', evt.target.innerHTML)
+          super.set('content', target.innerHTML)
         }
       },
     }
@@ -350,6 +323,6 @@ export default class Field extends Component {
   }
 
   get isCheckable() {
-    return chackableTypes.has(this.get('config.controlId'))
+    return checkableTypes.has(this.get('config.controlId'))
   }
 }

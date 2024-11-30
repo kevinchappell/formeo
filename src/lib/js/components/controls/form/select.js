@@ -1,9 +1,10 @@
 import i18n from '@draggable/i18n'
 import { generateOptionConfig } from './shared.js'
 import Control from '../control.js'
+import { merge } from '../../../common/utils/index.mjs'
 
 class SelectControl extends Control {
-  constructor() {
+  constructor(controlConfig = {}) {
     const selectConfig = {
       tag: 'select',
       config: {
@@ -18,9 +19,12 @@ class SelectControl extends Control {
         icon: 'select',
         id: 'select',
       },
-      options: generateOptionConfig('option'),
+      options: generateOptionConfig({ type: 'option', isMultiple: controlConfig.attrs?.multiple }),
     }
-    super(selectConfig)
+
+    const mergedConfig = merge(selectConfig, controlConfig)
+
+    super(mergedConfig)
   }
 }
 

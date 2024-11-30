@@ -3,6 +3,7 @@ import dom from './common/dom'
 import { uuid, isAddress, isExternalAddress, merge, cleanFormData } from './common/utils/index.mjs'
 import { COMPARISON_OPERATORS, STAGE_CLASSNAME, UUID_REGEXP } from './constants'
 import { fetchDependencies } from './common/loaders'
+import { splitAddress } from './common/utils/string.mjs'
 
 const RENDER_PREFIX = 'f-'
 
@@ -25,17 +26,15 @@ const baseId = id => {
 const newUUID = id => id.replace(UUID_REGEXP, uuid())
 
 const createRemoveButton = () =>
-  dom.render(
-    dom.btnTemplate({
-      className: 'remove-input-group',
-      children: dom.icon('remove'),
-      action: {
-        mouseover: ({ target }) => target.parentElement.classList.add('will-remove'),
-        mouseleave: ({ target }) => target.parentElement.classList.remove('will-remove'),
-        click: ({ target }) => target.parentElement.remove(),
-      },
-    }),
-  )
+  dom.btnTemplate({
+    className: 'remove-input-group',
+    children: dom.icon('remove'),
+    action: {
+      mouseover: ({ target }) => target.parentElement.classList.add('will-remove'),
+      mouseleave: ({ target }) => target.parentElement.classList.remove('will-remove'),
+      click: ({ target }) => target.parentElement.remove(),
+    },
+  })
 
 const comparisonHandlers = {
   equals: isEqual,
@@ -155,7 +154,6 @@ export default class FormeoRenderer {
 
     return {
       tag: config.fieldset ? 'fieldset' : 'div',
-      id: uuid(),
       className,
       children,
     }
@@ -169,23 +167,22 @@ export default class FormeoRenderer {
     })
   }
 
-  addButton = id =>
-    dom.render({
-      tag: 'button',
-      attrs: {
-        className: 'add-input-group btn pull-right',
-        type: 'button',
+  addButton = id => ({
+    tag: 'button',
+    attrs: {
+      className: 'add-input-group btn pull-right',
+      type: 'button',
+    },
+    children: 'Add +',
+    action: {
+      click: e => {
+        const fInputGroup = e.target.parentElement
+        const elem = this.cloneComponentData(id)
+        fInputGroup.insertBefore(elem, fInputGroup.lastChild)
+        elem.appendChild(createRemoveButton())
       },
-      children: 'Add +',
-      action: {
-        click: e => {
-          const fInputGroup = e.target.parentElement
-          const elem = dom.render(this.cloneComponentData(id))
-          fInputGroup.insertBefore(elem, fInputGroup.lastChild)
-          elem.appendChild(createRemoveButton())
-        },
-      },
-    })
+    },
+  })
 
   processColumns = rowId => {
     return this.orderChildren('columns', this.form.rows[rowId].children).map(column =>
@@ -211,7 +208,7 @@ export default class FormeoRenderer {
     return Object.values(this.form.stages).map(stage => {
       stage.children = this.processRows(stage.id)
       stage.className = STAGE_CLASSNAME
-      return dom.render(stage)
+      return stage
     })
   }
 
@@ -299,10 +296,8 @@ export default class FormeoRenderer {
     const targetPropertyMap = {
       isChecked: elem => {
         elem.checked = value
-      }
+      },
     }
-
-    // debugger
 
     if (isAddress(target)) {
       const elem = this.getComponent(target)
@@ -318,7 +313,12 @@ export default class FormeoRenderer {
   }
 
   getComponent = address => {
+    if (!isAddress(address)) {
+      return null
+    }
+    const [addressArray] = splitAddress(address)
     const componentId = address.slice(address.indexOf('.') + 1)
+    debugger
     const component = isExternalAddress(address)
       ? this.external[componentId]
       : this.renderedForm.querySelector(`#f-${componentId}`)

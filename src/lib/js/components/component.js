@@ -24,6 +24,7 @@ export default class Component extends Data {
     const data = { ...dataArg, id: dataArg.id || uuid() }
     super(name, data)
     this.id = data.id
+    this.shortId = this.id.slice(0, this.id.indexOf('-'))
     this.name = name
     this.indexName = `${name}s`
     this.config = Components[`${this.name}s`].config
@@ -204,7 +205,7 @@ export default class Component extends Data {
             id: 'edit',
           },
           action: {
-            click: evt => {
+            click: () => {
               this.toggleEdit()
             },
           },

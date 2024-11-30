@@ -1,9 +1,17 @@
 import i18n from '@draggable/i18n'
 import dom from '../../../common/dom.js'
 import actions from '../../../common/actions.js'
-import EditPanelItem from './edit-panel-item.mjs'
+import EditPanelItem, { toggleOptionMultiSelect } from './edit-panel-item.mjs'
 import { capitalize, safeAttrName } from '../../../common/helpers.mjs'
 import { slugify, toTitleCase } from '../../../common/utils/string.mjs'
+
+// @todo convert these hardcoded lists to use
+// the updated event system from #381
+const addAttributeActions = {
+  multiple: (val, field) => {
+    toggleOptionMultiSelect(!!val, field)
+  },
+}
 
 /**
  * Element/Field class.
@@ -45,7 +53,7 @@ export default class EditPanel {
    * @param  {Object} dataObj   field config object
    * @return {Object}           formeo DOM config object
    */
-  createProps(data) {
+  createProps(data = this.data) {
     this.editPanelItems = Array.from(data).map((dataVal, index) => {
       const isArray = this.type === 'array'
       const key = isArray ? `[${index}]` : `.${dataVal[0]}`
@@ -56,9 +64,10 @@ export default class EditPanel {
         data: val,
         field: this.field,
         index,
-        panelName: this.name,
+        panel: this,
       })
     })
+
     const editGroupConfig = {
       tag: 'ul',
       attrs: {
@@ -70,6 +79,12 @@ export default class EditPanel {
     }
 
     return dom.create(editGroupConfig)
+  }
+
+  updateProps() {
+    const newProps = this.createProps()
+    this.props.replaceWith(newProps)
+    this.props = newProps
   }
 
   /**
@@ -143,19 +158,19 @@ export default class EditPanel {
       val = JSON.parse(val)
     }
 
-    // @todo may need to camelCase `attr` here
     this.field.set(`attrs.${attr}`, val)
+    addAttributeActions[safeAttr]?.(val, this.field)
 
     const existingAttr = this.props.querySelector(`.field-attrs-${safeAttr}`)
     const newAttr = new EditPanelItem({
       key: itemKey,
       data: { [safeAttr]: val },
       field: this.field,
-      panelName: this.name,
+      panel: this,
     })
 
     if (existingAttr) {
-      this.props.replaceChild(newAttr.dom, existingAttr)
+      existingAttr.replaceWith(newAttr.dom)
     } else {
       this.props.appendChild(newAttr.dom)
     }
@@ -184,12 +199,13 @@ export default class EditPanel {
       data: itemData,
       field: this.field,
       index: this.props.children.length,
-      panelName: this.name,
+      panel: this,
     })
 
     this.editPanelItems.push(newOption)
     this.props.appendChild(newOption.dom)
     this.field.set(itemKey, itemData)
+    this.field.debouncedUpdatePreview()
     this.field.resizePanelWrap()
   }
 
@@ -206,7 +222,14 @@ export default class EditPanel {
     }
 
     this.field.set(itemKey, evt.template)
+    this.field.debouncedUpdatePreview()
 
     this.field.resizePanelWrap()
+  }
+
+  setData(val) {
+    this.data = val
+    this.field.set(this.name, val)
+    this.updateProps(val)
   }
 }

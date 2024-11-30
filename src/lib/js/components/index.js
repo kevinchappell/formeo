@@ -121,7 +121,8 @@ export class Components extends Data {
     const componentIndex = this.getIndex(type)
     const component = componentIndex.get(id)
 
-    component?.set(localAddress, value)
+    this.set(component.data, localAddress, value)
+    // component?.set(localAddress, value)
 
     return component
   }
