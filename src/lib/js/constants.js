@@ -213,7 +213,7 @@ export const CONDITION_TEMPLATE = () => ({
   ],
 })
 
-export const UUID_REGEXP = /(\b[0-9a-f]{8}\b-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-\b[0-9a-f]{12}\b)/gi
+export const UUID_REGEXP = /(\b[0-9a-f]{8}\b-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-\b[0-9a-f]{12}\b)|(\b[0-9a-f]{8}\b)/g
 
 export const bsColRegExp = /\bcol-\w+-\d+/g
 

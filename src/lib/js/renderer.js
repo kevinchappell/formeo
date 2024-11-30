@@ -73,7 +73,6 @@ export default class FormeoRenderer {
 
     const formDataObj = {}
     for (const [key, value] of userData.entries()) {
-      // If key already exists, convert to array
       if (formDataObj[key]) {
         if (Array.isArray(formDataObj[key])) {
           formDataObj[key].push(value)
@@ -224,10 +223,11 @@ export default class FormeoRenderer {
 
   cloneComponentData = componentId => {
     const { children = [], id, ...rest } = this.components[componentId]
-    return Object.assign({}, rest, {
-      id: newUUID(id),
-      children: children.length && children.map(({ id }) => this.cloneComponentData(baseId(id))),
-    })
+    return {
+      ...rest,
+      id: uuid(id),
+      children: children?.length && children.map(({ id }) => this.cloneComponentData(baseId(id))),
+    }
   }
 
   addButton = id => ({
@@ -240,9 +240,11 @@ export default class FormeoRenderer {
     action: {
       click: e => {
         const fInputGroup = e.target.parentElement
-        const elem = this.cloneComponentData(id)
+        const elem = dom.create(this.cloneComponentData(id))
         fInputGroup.insertBefore(elem, fInputGroup.lastChild)
-        elem.appendChild(createRemoveButton())
+        const removeButton = dom.create(createRemoveButton())
+
+        elem.appendChild(removeButton)
       },
     },
   })

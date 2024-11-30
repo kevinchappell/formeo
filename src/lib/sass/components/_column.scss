@@ -197,9 +197,11 @@
   }
 }
 
-.hovering-column {
-  // background-color: color.$white;
+button.column-handle {
+  background-color: rgba(255, 255, 255, 0.9);
+}
 
+.hovering-column {
   .column-tag {
     display: flex;
   }
@@ -222,13 +224,6 @@
 .hovering-column,
 .editing-column {
   box-shadow: 0 0 0 1px color.$column-outline-color;
-
-  // &::before {
-  //   display: block;
-  //   border-right: 1px solid color.$column-outline-color;
-  //   border-left: 1px solid color.$column-outline-color;
-  //   border-top: 1px solid color.$column-outline-color;
-  // }
 }
 
 .column-actions {

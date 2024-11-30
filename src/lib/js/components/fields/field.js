@@ -251,7 +251,7 @@ export default class Field extends Component {
           return this.debouncedUpdateEditPanels()
         }
 
-        if (target.contentEditable && !target.type.startsWith('select-')) {
+        if (target.contentEditable && !target.type?.startsWith('select-')) {
           const parentClassList = target.parentElement.classList
           const isOption = parentClassList.contains('f-checkbox') || parentClassList.contains('f-radio')
 

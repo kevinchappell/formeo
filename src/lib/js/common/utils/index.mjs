@@ -11,8 +11,10 @@ import {
   ANIMATION_SPEED_FAST,
 } from '../../constants.js'
 import mergeWith from 'lodash/mergeWith.js'
+import { slugify } from './string.mjs'
 
-const uuidv4 = () => crypto.randomUUID()
+const uuidv4 = () => crypto.randomUUID().slice(0, 8)
+const shortId = () => uuidv4().slice(0, 8)
 
 /**
  * Match the values from a string or array against a str.
@@ -102,7 +104,7 @@ export const unique = array => Array.from(new Set(array))
 
 // Get or generate a uuid
 export const uuid = elem => {
-  return elem?.attrs?.id || elem?.id || uuidv4()
+  return elem?.attrs?.id || elem?.id || shortId()
 }
 
 /**

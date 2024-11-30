@@ -151,6 +151,7 @@ export default class EditPanelItem {
       label: this.panelName !== 'options' && (labelHelper(labelKey) || toTitleCase(labelKey)),
       labelAfter: false,
     }
+
     const attrs = {
       name: baseConfig.attrs.type === 'checkbox' ? `${name}[]` : name,
     }

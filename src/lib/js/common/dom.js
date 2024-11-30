@@ -13,6 +13,7 @@ import {
   iconPrefix,
   formeoSpriteId,
 } from '../constants.js'
+import { extractTextFromHtml, slugify, truncateByWord } from './utils/string.mjs'
 
 const iconFontTemplates = {
   glyphicons: icon => `<span class="glyphicon glyphicon-${icon}" aria-hidden="true"></span>`,
@@ -24,6 +25,31 @@ const iconFontTemplates = {
 }
 
 const inputTags = new Set(['input', 'textarea', 'select'])
+
+export const getName = (elem = {}) => {
+  let name = elem?.attrs?.name || elem?.name
+
+  if (name) {
+    return name
+  }
+
+  const id = uuid(elem)
+  let label = elem.config?.label || elem.attrs?.label || elem?.label
+
+  if (label) {
+    if (typeof label === 'object') {
+      label = dom.create(label).textContent
+    }
+
+    if (/^<.+>.+<.+>$/gim.test(label)) {
+      label = extractTextFromHtml(label)
+    }
+
+    name = `${id}-${slugify(truncateByWord(label, 24, null))}`
+  }
+
+  return name
+}
 
 /**
  * General purpose markup utilities and generator.
@@ -92,6 +118,9 @@ class DOM {
   create = (elemArg, isPreview = false) => {
     if (!elemArg) {
       return
+    }
+    if (this.isDOMElement(elemArg)) {
+      return elemArg
     }
 
     const _this = this
@@ -345,7 +374,7 @@ class DOM {
     const { attrs = {} } = elem
 
     if (!isPreview && !attrs.name && attrs.name !== null && this.isInput(elem.tag)) {
-      element.setAttribute('name', uuid(elem))
+      element.setAttribute('name', getName(elem))
     }
 
     // Set element attributes
@@ -497,8 +526,9 @@ class DOM {
 
       const optionMarkup = {
         select: () => {
-          const { label, attrs: coalescedAttrs = option } = option
-          const { checked, selected, ...attrs } = coalescedAttrs
+          const defaultAttrs = option.attrs || option
+          const mergedOption = { attrs: defaultAttrs, ...option, ...defaultAttrs }
+          const { label, checked, selected, attrs } = mergedOption
           return {
             tag: 'option',
             attrs: { ...attrs, selected: !!(checked || selected) },
@@ -871,6 +901,14 @@ class DOM {
   isColumn = node => componentType(node) === COLUMN_CLASSNAME
   isField = node => componentType(node) === FIELD_CLASSNAME
   asComponent = elem => Components[`${componentType(elem)}s`].get(elem.id)
+
+  isDOMElement(variable) {
+    return (
+      variable instanceof Element ||
+      variable instanceof HTMLElement ||
+      (variable && typeof variable === 'object' && variable.nodeType === 1 && typeof variable.nodeName === 'string')
+    )
+  }
 }
 
 export const dom = new DOM()

@@ -1,12 +1,22 @@
 import i18n from '@draggable/i18n'
 import Control from '../control.js'
+import { merge } from '../../../common/utils/index.mjs'
+
+const buttonTypes = ['button', 'submit', 'reset'].map(buttonType => ({
+  label: buttonType,
+  value: buttonType,
+}))
+buttonTypes[0].selected = true
 
 class ButtonControl extends Control {
-  constructor() {
+  constructor(controlConfig = {}) {
     const buttonConfig = {
       tag: 'button',
       attrs: {
-        className: [{ label: 'grouped', value: 'f-btn-group' }, { label: 'ungrouped', value: 'f-field-group' }],
+        className: [
+          { label: 'grouped', value: 'f-btn-group' },
+          { label: 'ungrouped', value: 'f-field-group' },
+        ],
       },
       config: {
         label: i18n.get('controls.form.button'),
@@ -20,10 +30,7 @@ class ButtonControl extends Control {
       options: [
         {
           label: i18n.get('button'),
-          type: ['button', 'submit', 'reset'].map((buttonType) => ({
-            label: buttonType,
-            type: buttonType,
-          })),
+          type: buttonTypes,
           className: [
             {
               label: 'default',
@@ -50,7 +57,10 @@ class ButtonControl extends Control {
         },
       ],
     }
-    super(buttonConfig)
+
+    const mergedConfig = merge(buttonConfig, controlConfig)
+
+    super(mergedConfig)
   }
 }
 

@@ -83,3 +83,29 @@ export const splitAddress = str => {
 export const slugifyAddress = (str, separator = '-') => {
   return splitAddress(str).join(separator)
 }
+
+export const isHtmlString = str => {
+  return /^<.+>.+<.+>$/gim.test(str)
+}
+
+export const extractTextFromHtml = htmlString => {
+  const tempDiv = document.createElement('div')
+  tempDiv.innerHTML = htmlString
+  return tempDiv.textContent || tempDiv.innerText || ''
+}
+
+export const truncateByWord = (str, maxLength, tail = '…') => {
+  if (str.length <= maxLength) return str
+
+  // Slice first, then find last space
+  const truncated = str.slice(0, maxLength)
+  const spaceIndex = truncated.lastIndexOf(' ')
+
+  let truncatedWord = `${spaceIndex > 0 ? truncated.slice(0, spaceIndex) : truncated}`
+
+  if (tail) {
+    truncatedWord += tail
+  }
+
+  return truncatedWord
+}

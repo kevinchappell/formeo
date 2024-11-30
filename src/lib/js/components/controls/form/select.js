@@ -13,6 +13,7 @@ class SelectControl extends Control {
       attrs: {
         required: false,
         className: '',
+        multiple: false,
       },
       meta: {
         group: 'common',
