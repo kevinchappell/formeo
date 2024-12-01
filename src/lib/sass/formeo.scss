@@ -33,6 +33,13 @@
   &.formeo-render {
     @include meta.load-css("render");
   }
+
+  button {
+    .svg-icon {
+      max-width: 100%;
+      max-height: 100%;
+    }
+  }
 }
 
 @include meta.load-css("components/controls");

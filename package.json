@@ -108,7 +108,7 @@
     "zod-to-json-schema": "^3.23.5"
   },
   "dependencies": {
-    "@draggable/formeo-languages": "^3.4.0",
+    "@draggable/formeo-languages": "^3.4.1",
     "@draggable/i18n": "^1.0.7",
     "@draggable/tooltip": "^1.2.2",
     "lodash": "^4.17.21",

@@ -15,8 +15,6 @@ const optionDataMap = {
   ...OPERATORS,
 }
 
-export const INPUT_ORDER = ['selected', 'checked']
-
 export const segmentTypes = {
   assignment: createConditionSelect,
   comparison: createConditionSelect,

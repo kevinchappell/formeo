@@ -95,7 +95,10 @@ export default class EditPanelItem {
   generateConditionFields = (conditionType, conditionVals) => {
     // console.log('conditionType', conditionType, conditionVals)
     const conditionFields = conditionVals.map((condition, i) => {
-      const conditionField = new Condition({ conditionValues: condition, conditionType, index: i }, this)
+      const conditionField = new Condition(
+        { conditionValues: condition, conditionType, index: i, conditionCount: conditionVals.length },
+        this,
+      )
 
       return conditionField.dom
     })

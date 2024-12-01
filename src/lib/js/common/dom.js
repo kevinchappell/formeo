@@ -217,7 +217,7 @@ class DOM {
           }
           // if has label config, must be a field.
           // @todo change this logic so dom.create is project agnostic
-          wrap.className.push('formeo-field')
+          // wrap.className.push('formeo-field')
           wrap.children.push(wrapContent)
         }
       }

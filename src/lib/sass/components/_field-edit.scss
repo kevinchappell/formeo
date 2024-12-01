@@ -35,14 +35,24 @@
     flex-shrink: 0;
     align-items: center;
     display: flex;
-    margin-left: 3px;
+    margin-left: 8px;
+
+    &.conditions-prop-controls {
+      display: flex;
+      align-items: flex-start;
+
+      .prop-remove {
+        margin-top: -1px;
+      }
+    }
+
     button {
       position: relative;
     }
 
     .svg-icon {
-      width: calc(var.$prop-btn-width / 2);
-      height: calc(var.$prop-btn-width / 2);
+      width: 10px;
+      height: 10px;
       left: 50%;
       position: absolute;
       top: 50%;
@@ -51,8 +61,8 @@
   }
 
   .prop-control {
-    width: var.$prop-btn-width;
-    height: var.$prop-btn-width;
+    width: mixins.space(2);
+    height: mixins.space(2);
     right: 0;
     bottom: 0;
     position: absolute;
@@ -180,33 +190,47 @@
   // align-items: center;
   justify-content: space-between;
   flex: 1;
-
-  .remove-condition-type {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: var.$prop-btn-width;
-    height: var.$prop-btn-width;
-    padding: 0;
-
-    .svg-icon {
-      width: mixins.space(2);
-      height: mixins.space(2);
-    }
-  }
 }
 
 .f-condition-row {
   display: flex;
   width: 100%;
+  position: relative;
+  border-bottom: 1px solid color.$gray-lighter;
+  // border-right: 1px solid color.$gray-lighter;
 
-  border: 1px solid color.$gray-lighter;
-  margin-top: -1px;
-  overflow: hidden;
+  > [class^="condition-"] {
+    border-left: 1px solid color.$gray-lighter;
+  }
 
-  > * {
-    height: 100%;
-    box-shadow: 0 0 0 1px color.$gray-lighter;
+  .manage-condition-type {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: mixins.space(2);
+    height: mixins.space(2);
+    padding: 0;
+    right: -16px;
+    position: absolute;
+    box-shadow: none;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    z-index: 1;
+  }
+
+  .remove-condition-type {
+    top: 0;
+  }
+
+  .add-condition-type {
+    bottom: 0;
+  }
+
+  &:has(.add-condition-type) .remove-condition-type {
+    border-bottom-right-radius: 0;
+  }
+  &:has(.remove-condition-type) .add-condition-type {
+    border-top-right-radius: 0;
   }
 
   input,
@@ -249,9 +273,17 @@
   }
 
   [class^="condition-"] {
-    max-width: 50%;
     transition: max-width var.$animation-speed-base;
     will-change: max-width;
+    min-height: 31px;
+  }
+
+  .condition-source,
+  .condition-target {
+    max-width: 50%;
+    input[type="text"] {
+      min-height: 31px;
+    }
   }
 
   .hidden-property {
@@ -356,6 +388,8 @@
 }
 
 .conditions-prop-inputs {
+  border-top: 1px solid color.$gray-lighter;
+  border-right: 1px solid color.$gray-lighter;
   label.condition-label {
     display: inline-flex;
     flex: 0 0 auto;
@@ -365,16 +399,11 @@
     text-transform: uppercase;
     color: color.$gray-dark;
     background-color: color.$white;
-    &.if-condition-label {
-      border-top-left-radius: var.$input-border-radius;
-      border-bottom-left-radius: 0;
-      border-bottom-right-radius: 0;
-    }
+    font-size: 0.7em;
+
     &.then-condition-label {
-      border-bottom-left-radius: var.$input-border-radius;
-      border-top-left-radius: 0;
-      border-top-right-radius: 0;
-      border-top: 0;
+      background-color: color.$gray;
+      color: color.$white;
     }
   }
 }
