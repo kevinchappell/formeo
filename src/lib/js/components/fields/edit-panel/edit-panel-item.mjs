@@ -7,9 +7,7 @@ import { Condition } from './condition.mjs'
 import { INPUT_TYPE_ACTION, ITEM_INPUT_TYPE_MAP, labelHelper } from './helpers.mjs'
 import { merge } from '../../../common/utils/index.mjs'
 import { mergeActions } from '../../../common/utils/object.mjs'
-
-const checkedTypes = ['selected', 'checked']
-const reversedCheckedTypes = checkedTypes.toReversed()
+import { CHECKED_TYPES, REVERSED_CHECKED_TYPES } from '../../../constants.js'
 
 const panelDataKeyMap = new Map([
   ['attrs', ({ itemKey }) => itemKey],
@@ -19,7 +17,7 @@ const panelDataKeyMap = new Map([
 export const toggleOptionMultiSelect = (isMultiple, field) => {
   if (field.controlId === 'select') {
     const optionsPanel = field.editPanels.get('options')
-    const [fromCheckedType, toCheckedType] = isMultiple ? checkedTypes : reversedCheckedTypes
+    const [fromCheckedType, toCheckedType] = isMultiple ? CHECKED_TYPES : REVERSED_CHECKED_TYPES
     const updatedOptionsData = optionsPanel.data.map(({ [fromCheckedType]: val, ...option }) => ({
       [toCheckedType]: val,
       ...option,
@@ -53,7 +51,7 @@ export default class EditPanelItem {
    * @return {Object} field object
    */
   constructor({ key, data, index, field, panel }) {
-    this.itemValues = orderObjectsBy(Object.entries(data), checkedTypes, '0')
+    this.itemValues = orderObjectsBy(Object.entries(data), CHECKED_TYPES, '0')
     this.field = field
     this.itemKey = key
     this.itemIndex = index
@@ -83,15 +81,11 @@ export default class EditPanelItem {
     const inputs = {
       className: `${this.panelName}-prop-inputs prop-inputs f-input-group`,
       children: this.itemValues.map(([key, val]) => {
-        let inputConfig =
-          this.panelName === 'conditions' ? this.generateConditionFields(key, val) : this.itemInput(key, val)
-        if (['selected', 'checked'].includes(key)) {
-          inputConfig = {
-            className: 'f-addon',
-            children: inputConfig,
-          }
+        if (this.panelName === 'conditions') {
+          return this.generateConditionFields(key, val)
         }
-        return inputConfig
+
+        return this.itemInput(key, val)
       }),
     }
 
@@ -99,6 +93,7 @@ export default class EditPanelItem {
   }
 
   generateConditionFields = (conditionType, conditionVals) => {
+    // console.log('conditionType', conditionType, conditionVals)
     const conditionFields = conditionVals.map((condition, i) => {
       const conditionField = new Condition({ conditionValues: condition, conditionType, index: i }, this)
 
@@ -168,6 +163,14 @@ export default class EditPanelItem {
 
     const action = mergeActions(INPUT_TYPE_ACTION[valType](dataKey, this.field), itemInputAction || {})
 
-    return merge(ITEM_INPUT_TYPE_MAP[valType]({ key, value }), { action, attrs, config })
+    const inputConfig = merge(ITEM_INPUT_TYPE_MAP[valType]({ key, value }), { action, attrs, config })
+    if (CHECKED_TYPES.includes(key)) {
+      return {
+        className: 'f-addon',
+        children: inputConfig,
+      }
+    }
+
+    return inputConfig
   }
 }
