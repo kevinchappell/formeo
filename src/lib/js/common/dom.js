@@ -189,6 +189,7 @@ class DOM {
         if (elem.attrs.className) {
           wrap.className = elem.attrs.className
         }
+        wrap.id = elem.id
         wrap.config = { ...elem.config }
         return this.create(wrap, isPreview)
       }
@@ -374,7 +375,10 @@ class DOM {
     const { attrs = {} } = elem
 
     if (!isPreview && !attrs.name && attrs.name !== null && this.isInput(elem.tag)) {
-      element.setAttribute('name', getName(elem))
+      const name = getName(elem)
+      if (name) {
+        element.setAttribute('name', name)
+      }
     }
 
     // Set element attributes

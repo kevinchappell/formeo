@@ -1,14 +1,8 @@
 import i18n from '@draggable/i18n'
 import { toTitleCase } from '../../../common/utils/string.mjs'
 import dom from '../../../common/dom'
-import {
-  getIndexComponentType,
-  isAddress,
-  isBoolKey,
-  isExternalAddress,
-  isInternalAddress,
-} from '../../../common/utils/index.mjs'
-import { FIELD_INPUT_PROPERTY_MAP, INTERNAL_COMPONENT_INDEX_TYPES, OPERATORS } from '../../../constants'
+import { isExternalAddress, isInternalAddress } from '../../../common/utils/index.mjs'
+import { FIELD_INPUT_PROPERTY_MAP, OPERATORS } from '../../../constants'
 import Components from '../../index.js'
 import { ITEM_INPUT_TYPE_MAP } from './helpers.mjs'
 
@@ -20,8 +14,6 @@ const optionDataMap = {
   targetProperty: FIELD_INPUT_PROPERTY_MAP,
   ...OPERATORS,
 }
-
-const componentIndexRegex = new RegExp(`^(${INTERNAL_COMPONENT_INDEX_TYPES.join('|')}).`)
 
 export const INPUT_ORDER = ['selected', 'checked']
 
@@ -79,7 +71,6 @@ function makeOptionDomConfig({ fieldName, fieldValue, key, optionValue }) {
 }
 
 function createConditionSelect({ key, value, onChange }) {
-  // console.log(key)
   const optionConfigs = getOptionConfigs(key, value)
   const propertyFieldConfig = ITEM_INPUT_TYPE_MAP.array({ key: `condition.${key}`, value: optionConfigs })
 
@@ -102,11 +93,17 @@ const toggleFieldVisibility = (fieldConditions, fields) => {
 }
 
 const isCheckedValue = 'isChecked'
+const isCheckedOption = option => option.value.endsWith('Checked')
 const togglePropertyOptions = (isCheckable, propertyField) => {
+  // don't change if already a checked option
+  if (isCheckable && isCheckedOption(propertyField)) {
+    return null
+  }
+
   const options = Array.from(propertyField.querySelectorAll('option'))
 
   for (const option of options) {
-    const optionIsChecked = option.value === isCheckedValue
+    const optionIsChecked = isCheckedOption(option)
     const shouldHide = isCheckable ? !optionIsChecked : optionIsChecked
 
     option.classList.toggle(hiddenOptionClassname, shouldHide)
@@ -114,7 +111,7 @@ const togglePropertyOptions = (isCheckable, propertyField) => {
 
   propertyField.value = isCheckable
     ? isCheckedValue
-    : options.find(opt => opt.value !== isCheckedValue)?.value || propertyField.value
+    : options.find(opt => !isCheckedOption(opt))?.value || propertyField.value
 }
 
 export const conditionFieldHandlers = {
@@ -125,7 +122,7 @@ export const conditionFieldHandlers = {
     const visibilityConditions = {
       sourceProperty: [hasValue],
       comparison: [hasValue, !isCheckable],
-      target: [hasValue],
+      target: [hasValue, !isCheckable],
       targetProperty: [hasValue, target.value],
     }
 

@@ -1,55 +1,17 @@
-import isEqual from 'lodash/isEqual'
-import dom from './common/dom'
-import { uuid, isAddress, isExternalAddress, merge, cleanFormData } from './common/utils/index.mjs'
-import { COMPARISON_OPERATORS, STAGE_CLASSNAME, UUID_REGEXP } from './constants'
-import { fetchDependencies } from './common/loaders'
-import { splitAddress } from './common/utils/string.mjs'
-
-const RENDER_PREFIX = 'f-'
-
-const containerLookup = container => (typeof container === 'string' ? document.querySelector(container) : container)
-const processOptions = ({ editorContainer, renderContainer, formData, ...opts }) => {
-  const processedOptions = {
-    renderContainer: containerLookup(renderContainer),
-    editorContainer: containerLookup(editorContainer),
-    formData: cleanFormData(formData),
-  }
-
-  return { elements: {}, ...opts, ...processedOptions }
-}
-
-const baseId = id => {
-  const match = id.match(UUID_REGEXP)
-  return match?.[0] || id
-}
-
-const newUUID = id => id.replace(UUID_REGEXP, uuid())
-
-const createRemoveButton = () =>
-  dom.btnTemplate({
-    className: 'remove-input-group',
-    children: dom.icon('remove'),
-    action: {
-      mouseover: ({ target }) => target.parentElement.classList.add('will-remove'),
-      mouseleave: ({ target }) => target.parentElement.classList.remove('will-remove'),
-      click: ({ target }) => target.parentElement.remove(),
-    },
-  })
-
-const comparisonHandlers = {
-  equals: isEqual,
-  notEquals: (source, target) => !isEqual(source, target),
-  contains: (source, target) => source.includes(target),
-  notContains: (source, target) => !source.includes(target),
-}
-
-const comparisonMap = Object.entries(COMPARISON_OPERATORS).reduce((acc, [key, value]) => {
-  // support and new comparison operators for backwards compatibility
-  acc[value] = comparisonHandlers[key]
-  acc[key] = comparisonHandlers[key]
-
-  return acc
-}, {})
+import dom from '../common/dom'
+import { uuid, isAddress, isExternalAddress, merge, cleanFormData } from '../common/utils/index.mjs'
+import { STAGE_CLASSNAME } from '../constants'
+import { fetchDependencies } from '../common/loaders'
+import { splitAddress } from '../common/utils/string.mjs'
+import {
+  baseId,
+  comparisonMap,
+  createRemoveButton,
+  processOptions,
+  propertyMap,
+  RENDER_PREFIX,
+  targetPropertyMap,
+} from './helpers'
 
 export default class FormeoRenderer {
   constructor(opts, formDataArg) {
@@ -315,12 +277,13 @@ export default class FormeoRenderer {
 
           for (const ifCondition of ifConditions) {
             const { source, ...ifRest } = ifCondition
-
             if (isAddress(source)) {
-              const components = this.getComponents(source)
-              for (const component of components) {
-                this.handleComponentCondition(component, ifRest, thenConditions)
-              }
+              const component = this.getComponent(source)
+              this.handleComponentCondition(component, ifRest, thenConditions)
+              // const components = this.getComponents(source)
+              // for (const component of components) {
+              //   this.handleComponentCondition(component, ifRest, thenConditions)
+              // }
             }
           }
         }
@@ -333,47 +296,22 @@ export default class FormeoRenderer {
    */
   evaluateCondition = ({ sourceProperty, targetProperty, comparison, target }, evt) => {
     // Compare as string, this allows values like "true" to be checked for properties like "checked".
-    const sourceValue = String(evt.target[sourceProperty])
+    const sourceValue = propertyMap[sourceProperty]?.(evt.target)
+
+    if (typeof sourceValue === 'boolean') {
+      return sourceValue
+    }
+
     const targetValue = String(isAddress(target) ? this.getComponent(target)[targetProperty] : target)
+
     return comparisonMap[comparison]?.(sourceValue, targetValue)
   }
 
-  execResult = ({ assignment, target, targetProperty, value }) => {
-    const assignMap = {
-      equals: elem => {
-        const propMap = {
-          value: () => {
-            elem[targetProperty] = value
-          },
-          isNotVisible: () => {
-            elem.parentElement.setAttribute('hidden', true)
-            elem.required = false // Hidden input cannot be required.
-          },
-          isVisible: () => {
-            elem.parentElement.removeAttribute('hidden')
-            elem.required = elem._required
-          },
-        }
-        propMap[targetProperty]?.()
-      },
-    }
-
-    const targetPropertyMap = {
-      isChecked: elem => {
-        elem.checked = value
-      },
-    }
-
+  execResult = ({ target, targetProperty, assignment, value }) => {
     if (isAddress(target)) {
       const elem = this.getComponent(target)
 
-      // Store required value.
-      if (elem && elem._required === undefined) {
-        elem._required = elem.required
-      }
-
-      targetPropertyMap[targetProperty]?.(elem)
-      // assignMap[assignment]?.(elem)
+      targetPropertyMap[targetProperty]?.(elem, { targetProperty, assignment, value })
     }
   }
 
@@ -381,18 +319,30 @@ export default class FormeoRenderer {
     if (!isAddress(address)) {
       return null
     }
-    const [addressArray] = splitAddress(address)
-    const componentId = address.slice(address.indexOf('.') + 1)
-    debugger
-    const component = isExternalAddress(address)
-      ? this.external[componentId]
-      : this.renderedForm.querySelector(`#f-${componentId}`)
+    const [componentIndexType, componentId, optionsKey, optionIndex] = splitAddress(address)
+
+    if (componentIndexType === 'external') {
+      return this.external[componentId]
+    }
+
+    const component = this.renderedForm.querySelector(`#${RENDER_PREFIX}${componentId}`)
+
+    if (!component) {
+      return null
+    }
+
+    if (optionsKey) {
+      const options = component.querySelectorAll('input')
+      return options[optionIndex]
+    }
+
     return component
   }
 
   getComponents = address => {
     const components = []
     const componentId = address.slice(address.indexOf('.') + 1)
+    // const
 
     if (isExternalAddress(address)) {
       components.push(this.external[componentId])

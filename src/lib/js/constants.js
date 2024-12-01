@@ -163,8 +163,6 @@ export const LOGICAL_OPERATORS = {
   or: '||',
 }
 
-const visiblityConfigs = ['isVisible', 'isNotVisible']
-
 export const ASSIGNMENT_OPERATORS = {
   equals: '=',
 }
@@ -179,12 +177,13 @@ export const CONDITION_INPUT_ORDER = [
   'value',
 ]
 
-// @todo remove
-export const FIELD_CHECKBOX_PROPERTY_MAP = {
-  ...visiblityConfigs,
-}
-
-export const FIELD_INPUT_PROPERTY_MAP = objectFromStringArray(['isChecked', 'value', ...visiblityConfigs])
+export const FIELD_INPUT_PROPERTY_MAP = objectFromStringArray([
+  'isChecked',
+  'isNotChecked',
+  'value',
+  'isVisible',
+  'isNotVisible',
+])
 
 export const OPERATORS = {
   comparison: COMPARISON_OPERATORS,

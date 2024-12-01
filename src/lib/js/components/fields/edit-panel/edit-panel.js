@@ -213,7 +213,7 @@ export default class EditPanel {
     const currentConditions = this.field.get('conditions')
     const itemKey = `conditions.${currentConditions.length}`
     const existingCondition = this.props.querySelector(`.field-${itemKey.replace('.', '-')}`)
-    const newCondition = new EditPanelItem({ key: itemKey, data: evt.template, field: this.field })
+    const newCondition = new EditPanelItem({ key: itemKey, data: evt.template, field: this.field, panel: this })
 
     if (existingCondition) {
       this.props.replaceChild(newCondition.dom, existingCondition)
