@@ -1,13 +1,13 @@
-@use "../base/colors" as color;
-@use "../base/variables" as var;
+@use '../base/colors' as color;
+@use '../base/variables' as var;
 
-@use "group-actions";
-@use "row";
-@use "row-edit";
-@use "column";
-@use "field";
-@use "field-edit";
-@use "../base/mixins";
+@use 'group-actions';
+@use 'row';
+@use 'row-edit';
+@use 'column';
+@use 'field';
+@use 'field-edit';
+@use '../base/mixins';
 
 .formeo-stage {
   width: 73%;
@@ -16,22 +16,20 @@
   margin-right: mixins.space();
   flex: 1 1 auto;
   position: relative;
-  transition-property: background-color, border-color;
-  transition-duration: 500ms, 333ms;
-  border: 0 dashed transparent;
+  transition-property: background-color, border;
+  transition-duration: var.$animation-speed-base, var.$animation-speed-base;
+  border-width: 1px;
+  border-style: dashed;
+  border-color: transparent;
   background-color: color.$stage-background;
   padding-left: var.$action-btn-width - 1;
   padding-bottom: mixins.space(1);
   overflow: visible;
+  border-radius: mixins.space(1) 0 mixins.space(1) mixins.space(1);
 
   > .children {
     @include mixins.display-column;
     gap: var.$component-gap;
-  }
-
-  &.empty {
-    border: 3px dashed color.$gray-lighter;
-    background-color: color.$shadow;
   }
 
   &.removing-all-fields {
@@ -46,7 +44,7 @@
 
   @include mixins.no-list-style;
 
-  @include mixins.breakpoint("phone-lrg") {
+  @include mixins.breakpoint('phone-lrg') {
     width: calc(100% - 50px);
   }
 
@@ -56,6 +54,70 @@
 
   .hidden {
     display: none;
+  }
+
+  &.empty {
+    border: 1px solid color.$gray-light;
+    background-color: color.$shadow;
+  }
+
+  &.editing-stage,
+  &.hovering-stage,
+  &.hovering-stage.empty {
+    border-color: color.$stage-outline-color;
+
+    .stage-tag {
+      display: flex;
+    }
+
+    .stage-action-btn-wrap {
+      display: flex;
+      border-top-right-radius: 8px;
+    }
+
+    .stage-handle {
+      display: none;
+    }
+  }
+}
+
+.stage-tag {
+  border: 0 none;
+  border: inherit;
+  display: none;
+  left: auto;
+  overflow: hidden;
+  padding: 0 var.$action-btn-width + mixins.space(1) 2px mixins.space(1);
+  right: -1px;
+  top: -23px;
+  transition: width var.$animation-speed-base ease-in-out;
+  width: auto;
+  border-bottom-width: 0;
+}
+
+.stage-edit {
+  padding: mixins.space(1);
+  background-color: color.$white;
+  margin-top: 0;
+  margin-bottom: mixins.space(2);
+  border-top-left-radius: mixins.space(1);
+}
+
+.stage-actions {
+  right: -1px;
+  top: -(var.$prop-btn-width - 1);
+  text-align: right;
+  border-bottom-left-radius: var.$input-border-radius;
+  border-bottom-right-radius: 0;
+  border-width: 0;
+  .edit-toggle,
+  .edit-toggle:focus {
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    border-right: 1px solid color.$stage-outline-color;
+    border-top-left-radius: 0;
+    border-top-right-radius: mixins.space(1);
+    border-top: 1px solid color.$stage-outline-color;
   }
 }
 
@@ -73,8 +135,8 @@
   margin-bottom: 0;
 }
 
-[class$="empty"] {
-  &[class*="editing-"] {
+[class$='empty'] {
+  &[class*='editing-'] {
     &::after {
       opacity: 0;
     }

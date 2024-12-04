@@ -1,5 +1,5 @@
 /* global MutationObserver */
-import { uuid, componentType, merge, clone, remove, identity } from '../common/utils/index.mjs'
+import { uuid, componentType, merge, clone, remove, identity, unique, debounce } from '../common/utils/index.mjs'
 import { isInt, map, forEach, indexOfNode } from '../common/helpers.mjs'
 import dom from '../common/dom.js'
 import {
@@ -18,9 +18,11 @@ import animate from '../common/animation.js'
 import Controls from './controls/index.js'
 import { get, set } from '../common/utils/object.mjs'
 import { splitAddress, toTitleCase } from '../common/utils/string.mjs'
+import EditPanel from './edit-panel/edit-panel.js'
+import Panels from './panels.js'
 
 export default class Component extends Data {
-  constructor(name, dataArg = {}, render) {
+  constructor(name, dataArg = {}) {
     const data = { ...dataArg, id: dataArg.id || uuid() }
     super(name, data)
     this.id = data.id
@@ -31,8 +33,8 @@ export default class Component extends Data {
     merge(this.config, data.config)
     this.address = `${this.name}s.${this.id}`
     this.dataPath = `${this.address}.`
-    this.observer = new window.MutationObserver(this.mutationHandler)
-    this.render = render
+    // this.observer = new window.MutationObserver(this.mutationHandler)
+    this.editPanels = new Map()
   }
 
   mutationHandler = mutations =>
@@ -41,10 +43,10 @@ export default class Component extends Data {
       // see dom.create.onRender for implementation pattern
     })
 
-  observe(container) {
-    this.observer.disconnect()
-    this.observer.observe(container, { childList: true })
-  }
+  // observe(container) {
+  //   this.observer.disconnect()
+  //   this.observer.observe(container, { childList: true })
+  // }
 
   get js() {
     return this.data
@@ -200,7 +202,7 @@ export default class Component extends Data {
       edit: (icon = 'edit') => {
         return {
           ...dom.btnTemplate({ content: dom.icon(icon) }),
-          className: ['item-edit-toggle'],
+          className: ['edit-toggle'],
           meta: {
             id: 'edit',
           },
@@ -666,5 +668,101 @@ export default class Component extends Data {
   }
   get isField() {
     return this.name === COMPONENT_TYPE_MAP.field
+  }
+
+  /**
+   * Checks if attribute is allowed to be edited
+   * @param  {String}  propName
+   * @return {Boolean}
+   */
+  isDisabledProp = (propName, kind = 'attrs') => {
+    const propKind = this.config.panels[kind]
+    if (!propKind) {
+      return false
+    }
+    const disabledAttrs = propKind.disabled.concat(this.get(`config.disabled${toTitleCase(kind)}`))
+    return disabledAttrs.includes(propName)
+  }
+
+  /**
+   * Checks if property can be removed
+   * @param  {String}  propName
+   * @return {Boolean}
+   */
+  isLockedProp = (propName, kind = 'attrs') => {
+    const propKind = this.config.panels[kind]
+    if (!propKind) {
+      return false
+    }
+    const lockedAttrs = propKind.locked.concat(this.get(`config.locked${toTitleCase(kind)}`))
+    return lockedAttrs.includes(propName)
+  }
+
+  /**
+   * Generate the markup for field edit mode
+   * @return {Object} fieldEdit element config
+   */
+  get editWindow() {
+    const editWindow = {
+      className: ['component-edit', `${this.name}-edit`, 'slide-toggle', 'formeo-panels-wrap'],
+    }
+
+    const editPanelLength = this.editPanels.size
+
+    if (editPanelLength) {
+      editWindow.className.push(`panel-count-${editPanelLength}`)
+      editWindow.content = [this.panels.panelNav, this.panels.panelsWrap]
+      this.panelNav = this.panels.nav
+      this.resizePanelWrap = this.panels.nav.refresh
+    }
+
+    editWindow.action = {
+      onRender: () => {
+        if (editPanelLength === 0) {
+          // If this element has no edit panels, remove the edit toggle
+          const editToggle = this.dom.querySelector('.edit-toggle')
+          const fieldActions = this.dom.querySelector(`.${this.name}-actions`)
+          const actionButtons = fieldActions.getElementsByTagName('button')
+          fieldActions.style.maxWidth = `${actionButtons.length * actionButtons[0].clientWidth}px`
+          dom.remove(editToggle)
+        } else {
+          this.resizePanelWrap()
+        }
+      },
+    }
+
+    return dom.create(editWindow)
+  }
+
+  updateEditPanels = () => {
+    if (!this.config) {
+      return null
+    }
+    const editable = ['object', 'array']
+    const panelOrder = unique([...this.config.panels.order, ...Object.keys(this.data)])
+    const noPanels = ['children', 'config', 'meta', 'action', 'events', ...this.config.panels.disabled]
+    const allowedPanels = panelOrder.filter(panelName => !noPanels.includes(panelName))
+
+    for (const panelName of allowedPanels) {
+      const panelData = this.get(panelName)
+      const propType = dom.childType(panelData)
+      if (editable.includes(propType)) {
+        const editPanel = new EditPanel(panelData, panelName, this)
+        this.editPanels.set(editPanel.name, editPanel)
+      }
+    }
+
+    const panelsData = {
+      panels: Array.from(this.editPanels.values()).map(({ panelConfig }) => panelConfig),
+      id: this.id,
+      displayType: 'auto',
+    }
+
+    this.panels = new Panels(panelsData)
+
+    if (this.dom) {
+      this.dom.querySelector('.panel-nav').replaceWith(this.panels.panelNav)
+      this.dom.querySelector('.panels').replaceWith(this.panels.panelsWrap)
+    }
   }
 }

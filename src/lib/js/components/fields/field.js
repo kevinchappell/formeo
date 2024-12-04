@@ -1,16 +1,13 @@
 import i18n from '@draggable/i18n'
 import dom from '../../common/dom.js'
-import Panels from '../panels.js'
-import { clone, debounce, unique } from '../../common/utils/index.mjs'
-import EditPanel from './edit-panel/edit-panel.js'
+import { clone, debounce } from '../../common/utils/index.mjs'
 import Component from '../component.js'
 import { FIELD_CLASSNAME, CONDITION_TEMPLATE } from '../../constants.js'
-import { toTitleCase } from '../../common/utils/string.mjs'
 import controls from '../controls/index.js'
 import { indexOfNode } from '../../common/helpers.mjs'
 
 const DEFAULT_DATA = () => ({
-  conditions: [CONDITION_TEMPLATE()],
+  // conditions: [CONDITION_TEMPLATE()],
 })
 
 const checkableTypes = new Set(['checkbox', 'radio'])
@@ -33,11 +30,13 @@ export default class Field extends Component {
 
     this.label = dom.create(this.labelConfig)
     this.preview = this.fieldPreview()
-    this.editPanels = new Map()
+    
     this.controlId = this.get('config.controlId') || this.get('meta.id')
 
     const actionButtons = this.getActionButtons()
     const hasEditButton = this.actionButtons.some(child => child.meta?.id === 'edit')
+
+    this.updateEditPanels()
 
     const field = dom.create({
       tag: 'li',
@@ -49,7 +48,7 @@ export default class Field extends Component {
         this.label,
         this.getComponentTag(),
         actionButtons,
-        hasEditButton && this.fieldEdit, // fieldEdit window,
+        hasEditButton && this.editWindow, // fieldEdit window,
         this.preview,
       ].filter(Boolean),
       panelNav: this.panelNav,
@@ -58,7 +57,7 @@ export default class Field extends Component {
       },
     })
 
-    this.observe(field)
+    // this.observe(field)
 
     this.dom = field
     this.isEditing = false
@@ -150,72 +149,6 @@ export default class Field extends Component {
     this.preview = newPreview
   }
 
-  updateEditPanels = () => {
-    const editable = ['object', 'array']
-    const panelOrder = unique([...this.config.panels.order, ...Object.keys(this.data)])
-    const noPanels = ['config', 'meta', 'action', 'events', ...this.config.panels.disabled]
-    const allowedPanels = panelOrder.filter(panelName => !noPanels.includes(panelName))
-
-    for (const panelName of allowedPanels) {
-      const panelData = this.get(panelName)
-      const propType = dom.childType(panelData)
-      if (editable.includes(propType)) {
-        const editPanel = new EditPanel(panelData, panelName, this)
-        this.editPanels.set(editPanel.name, editPanel)
-      }
-    }
-
-    const panelsData = {
-      panels: Array.from(this.editPanels.values()).map(({ panelConfig }) => panelConfig),
-      id: this.id,
-      displayType: 'auto',
-    }
-
-    this.panels = new Panels(panelsData)
-    if (this.dom) {
-      this.dom.querySelector('.panel-nav').replaceWith(this.panels.panelNav)
-      this.dom.querySelector('.panels').replaceWith(this.panels.panelsWrap)
-    }
-  }
-
-  /**
-   * Generate the markup for field edit mode
-   * @return {Object} fieldEdit element config
-   */
-  get fieldEdit() {
-    const fieldEdit = {
-      className: ['field-edit', 'slide-toggle', 'formeo-panels-wrap'],
-    }
-    this.updateEditPanels()
-
-    const editPanelLength = this.editPanels.size
-
-    if (editPanelLength) {
-      fieldEdit.className.push(`panel-count-${editPanelLength}`)
-      fieldEdit.content = [this.panels.panelNav, this.panels.panelsWrap]
-      this.panelNav = this.panels.nav
-      this.resizePanelWrap = this.panels.nav.refresh
-    }
-
-    fieldEdit.action = {
-      onRender: () => {
-        if (editPanelLength === 0) {
-          // If this element has no edit panels, remove the edit toggle
-          const field = this.dom
-          const editToggle = field.querySelector('.item-edit-toggle')
-          const fieldActions = field.querySelector('.field-actions')
-          const actionButtons = fieldActions.getElementsByTagName('button')
-          fieldActions.style.maxWidth = `${actionButtons.length * actionButtons[0].clientWidth}px`
-          dom.remove(editToggle)
-        } else {
-          this.resizePanelWrap()
-        }
-      },
-    }
-
-    return dom.create(fieldEdit)
-  }
-
   get defaultPreviewActions() {
     return {
       change: evt => {
@@ -292,34 +225,6 @@ export default class Field extends Component {
     }
 
     return dom.create(fieldPreview, true)
-  }
-
-  /**
-   * Checks if attribute is allowed to be edited
-   * @param  {String}  propName
-   * @return {Boolean}
-   */
-  isDisabledProp = (propName, kind = 'attrs') => {
-    const propKind = this.config.panels[kind]
-    if (!propKind) {
-      return false
-    }
-    const disabledAttrs = propKind.disabled.concat(this.get(`config.disabled${toTitleCase(kind)}`))
-    return disabledAttrs.includes(propName)
-  }
-
-  /**
-   * Checks if property can be removed
-   * @param  {String}  propName
-   * @return {Boolean}
-   */
-  isLockedProp = (propName, kind = 'attrs') => {
-    const propKind = this.config.panels[kind]
-    if (!propKind) {
-      return false
-    }
-    const lockedAttrs = propKind.locked.concat(this.get(`config.locked${toTitleCase(kind)}`))
-    return lockedAttrs.includes(propName)
   }
 
   get isCheckable() {

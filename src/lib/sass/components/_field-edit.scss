@@ -1,9 +1,9 @@
-@use "../base/mixins";
+@use '../base/mixins';
 
-@use "../base/colors" as color;
-@use "../base/variables" as var;
+@use '../base/colors' as color;
+@use '../base/variables' as var;
 
-.field-edit {
+.component-edit {
   display: none;
   overflow: hidden;
   margin-top: var.$double-space;
@@ -23,11 +23,7 @@
     }
   }
 
-  &.field-edit-options {
-    list-style: decimal;
-  }
-
-  .field-prop {
+  .component-prop {
     display: flex;
   }
 
@@ -127,11 +123,13 @@
 
   .prop-inputs,
   .prop-controls {
-    transition: width 150ms, display 150ms;
+    transition:
+      width 150ms,
+      display 150ms;
     will-change: width;
 
     .f-addon,
-    input:not([type="checkbox"]):not([type="radio"]),
+    input:not([type='checkbox']):not([type='radio']),
     select,
     textarea,
     [contenteditable] {
@@ -171,7 +169,6 @@
 
   &[popover] {
     display: block;
-    height: auto;
     width: 66.7%;
     height: 66.7%;
     top: 50%;
@@ -199,7 +196,7 @@
   border-bottom: 1px solid color.$gray-lighter;
   // border-right: 1px solid color.$gray-lighter;
 
-  > [class^="condition-"] {
+  > [class^='condition-'] {
     border-left: 1px solid color.$gray-lighter;
   }
 
@@ -272,7 +269,7 @@
     width: 100%;
   }
 
-  [class^="condition-"] {
+  [class^='condition-'] {
     transition: max-width var.$animation-speed-base;
     will-change: max-width;
     min-height: 31px;
@@ -281,7 +278,7 @@
   .condition-source,
   .condition-target {
     max-width: 50%;
-    input[type="text"] {
+    input[type='text'] {
       min-height: 31px;
     }
   }
@@ -408,7 +405,7 @@
   }
 }
 
-.field-edit-group {
+.edit-group {
   @include mixins.no-list-style;
 }
 
@@ -451,7 +448,7 @@
 
   padding: 0 mixins.space(1) mixins.space(1);
 
-  [class^="add-"] {
+  [class^='add-'] {
     float: right;
   }
 }
@@ -492,7 +489,7 @@
 
   &.attrs-prop-inputs {
     .f-addon,
-    input:not([type="checkbox"]):not([type="radio"]),
+    input:not([type='checkbox']):not([type='radio']),
     select,
     textarea,
     [contenteditable] {

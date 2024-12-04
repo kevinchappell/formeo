@@ -4,7 +4,7 @@ import Controls from '../controls/index.js'
 import { get, set } from '../../common/utils/object.mjs'
 import { parseData } from '../../common/utils/index.mjs'
 
-const DEFAULT_CONFIG = {
+const DEFAULT_CONFIG = () => ({
   actionButtons: {
     buttons: ['move', 'edit', 'clone', 'remove'],
     disabled: [],
@@ -21,12 +21,12 @@ const DEFAULT_CONFIG = {
   label: {
     disableHTML: false,
   },
-}
+})
 
 export class Fields extends ComponentData {
   constructor(fieldData) {
     super('fields', fieldData)
-    this.config = { all: DEFAULT_CONFIG }
+    this.config = { all: DEFAULT_CONFIG() }
   }
   Component(data) {
     return new Field(data)

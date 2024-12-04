@@ -30,7 +30,7 @@ export const editorOptions = {
   onLoad: () => {
     const firstField = document.querySelector('.formeo-field')
     if (firstField) {
-      firstField.querySelector('.item-edit-toggle').click()
+      firstField.querySelector('.edit-toggle').click()
       firstField.querySelector('.panel-labels')?.children[0].lastChild.click()
     }
   },

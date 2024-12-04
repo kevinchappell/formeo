@@ -1,11 +1,13 @@
 import Sortable from 'sortablejs'
+import i18n from '@draggable/i18n'
 import dom from '../../common/dom.js'
 import Component from '../component.js'
-import { STAGE_CLASSNAME, ANIMATION_SPEED_BASE, ROW_CLASSNAME } from '../../constants.js'
+import { STAGE_CLASSNAME, ANIMATION_SPEED_BASE, ROW_CLASSNAME, CONDITION_TEMPLATE } from '../../constants.js'
 import Stages from './index.js'
 import animate from '../../common/animation.js'
+import { debounce } from '../../common/utils/index.mjs'
 
-const DEFAULT_DATA = () => Object.freeze({ children: [] })
+const DEFAULT_DATA = () => ({ conditions: [CONDITION_TEMPLATE()], children: [] })
 
 /**
  * Stage is where fields and elements are dragged to.
@@ -17,50 +19,57 @@ export default class Stage extends Component {
    * @param  {String} stageData uuid
    * @return {Object} DOM element
    */
-  constructor(stageData, render) {
-    super('stage', { ...DEFAULT_DATA(), ...stageData }, render)
+  constructor(stageData) {
+    super('stage', { ...DEFAULT_DATA(), ...stageData })
+
+    this.updateEditPanels()
+
+    this.debouncedUpdateEditPanels = debounce(this.updateEditPanels)
 
     // @todo move formSettings to its own component
-    // const defaultOptions = {
-    //   formSettings: [
-    //     {
-    //       tag: 'input',
-    //       id: 'form-title',
-    //       attrs: {
-    //         className: 'form-title',
-    //         placeholder: i18n.get('Untitled Form'),
-    //         value: i18n.get('Untitled Form'),
-    //         type: 'text',
-    //       },
-    //       config: {
-    //         label: i18n.get('Form Title'),
-    //       },
-    //     },
-    //     {
-    //       tag: 'input',
-    //       id: 'form-novalidate',
-    //       attrs: {
-    //         className: 'form-novalidate',
-    //         value: false,
-    //         type: 'checkbox',
-    //       },
-    //       config: {
-    //         label: i18n.get('Form novalidate'),
-    //       },
-    //     },
-    //     {
-    //       tag: 'input',
-    //       id: 'form-tags',
-    //       attrs: {
-    //         className: 'form-tags',
-    //         type: 'text',
-    //       },
-    //       config: {
-    //         label: i18n.get('Tags'),
-    //       },
-    //     },
-    //   ],
-    // }
+    const stageSettings = {
+      className: 'stage-settings',
+      children: [
+        {
+          tag: 'input',
+          id: 'form-title',
+          attrs: {
+            className: 'form-title',
+            placeholder: i18n.get('Untitled Form'),
+            value: i18n.get('Untitled Form'),
+            type: 'text',
+          },
+          config: {
+            label: i18n.get('Form Title') || 'Stage Title',
+          },
+        },
+        {
+          tag: 'input',
+          id: 'form-novalidate',
+          attrs: {
+            className: 'form-novalidate',
+            value: false,
+            type: 'checkbox',
+          },
+          config: {
+            label: i18n.get('Form novalidate'),
+          },
+        },
+        {
+          tag: 'input',
+          id: 'form-tags',
+          attrs: {
+            className: 'form-tags',
+            type: 'text',
+          },
+          config: {
+            label: i18n.get('Tags'),
+          },
+        },
+      ],
+    }
+
+    // const editPanel = new EditPanel(stageData.conditions, 'conditions', this)
 
     const children = this.createChildWrap()
 
@@ -69,7 +78,7 @@ export default class Stage extends Component {
         className: [STAGE_CLASSNAME, 'empty'],
         id: this.id,
       },
-      children,
+      children: [this.getComponentTag(), this.getActionButtons(), this.editWindow, children],
     })
 
     Sortable.create(children, {
