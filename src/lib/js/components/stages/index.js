@@ -8,6 +8,9 @@ const DEFAULT_CONFIG = () => ({
   },
   panels: {
     disabled:[],
+    // The 'order' array specifies the sequence in which the panels should be displayed.
+    // Each string in the array represents a panel type, such as 'attrs', 'options', or 'conditions'.
+    // By default, these panels are ordered as you see below, but can be override via formeo options.
     order: ['attrs', 'options', 'conditions'],
   },
 })
