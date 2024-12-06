@@ -17,6 +17,7 @@ function orderConditionValues(conditionValues, fieldOrder = CONDITION_INPUT_ORDE
 
 export class Condition {
   constructor({ conditionValues, conditionType, index, conditionCount }, parent) {
+    // return null
     this.values = new Map(orderConditionValues(conditionValues))
     this.conditionType = conditionType
     this.index = index
@@ -83,7 +84,7 @@ export class Condition {
       className: `f-condition-row ${this.conditionType}-condition-row`,
       action: {
         onRender: elem => {
-          this.processUiState()
+          // this.processUiState()
         },
       },
     }

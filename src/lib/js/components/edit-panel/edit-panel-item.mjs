@@ -56,7 +56,6 @@ export default class EditPanelItem {
     this.itemKey = key
     this.itemIndex = index
     this.panel = panel
-    console.log('panel', panel.name)
     this.panelName = panel.name
     this.isDisabled = field.isDisabledProp(key, this.panelName)
     this.isHidden = this.isDisabled && field.config.panels[this.panelName].hideDisabled
@@ -178,3 +177,6 @@ export default class EditPanelItem {
     return inputConfig
   }
 }
+
+// Exporting EditPanelItem for unit tests
+export { EditPanelItem }

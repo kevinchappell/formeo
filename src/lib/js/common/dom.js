@@ -12,6 +12,7 @@ import {
   CHILD_CLASSNAME_MAP,
   iconPrefix,
   formeoSpriteId,
+  ANIMATION_SPEED_BASE,
 } from '../constants.js'
 import { extractTextFromHtml, slugify, truncateByWord } from './utils/string.mjs'
 
@@ -264,12 +265,16 @@ class DOM {
     return element
   }
 
-  onRender = (node, cb) => {
-    if (!node.parentElement) {
-      window.requestAnimationFrame(() => this.onRender(node, cb))
-    } else {
-      cb(node)
-    }
+  onRender = (node, cb, timeout = ANIMATION_SPEED_BASE) => {
+    const start = Date.now();
+    const checkParent = () => {
+      if (!node.parentElement && Date.now() - start < timeout) {
+        window.requestAnimationFrame(checkParent);
+      } else if (node.parentElement) {
+        cb(node);
+      }
+    };
+    checkParent();
   }
 
   /**
@@ -908,8 +913,8 @@ class DOM {
 
   isDOMElement(variable) {
     return (
-      variable instanceof Element ||
-      variable instanceof HTMLElement ||
+      variable instanceof window.Element ||
+      variable instanceof window.HTMLElement ||
       (variable && typeof variable === 'object' && variable.nodeType === 1 && typeof variable.nodeName === 'string')
     )
   }

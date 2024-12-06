@@ -2,7 +2,7 @@ import i18n from '@draggable/i18n'
 import dom from '../../common/dom.js'
 import { clone, debounce } from '../../common/utils/index.mjs'
 import Component from '../component.js'
-import { FIELD_CLASSNAME, CONDITION_TEMPLATE } from '../../constants.js'
+import { FIELD_CLASSNAME } from '../../constants.js'
 import controls from '../controls/index.js'
 import { indexOfNode } from '../../common/helpers.mjs'
 

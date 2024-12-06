@@ -7,6 +7,4 @@ class ResizeObserver {
   }
 }
 
-window.ResizeObserver = ResizeObserver
-
 export default ResizeObserver

@@ -1,7 +1,7 @@
 import i18n from '@draggable/i18n'
 import { toTitleCase } from '../../common/utils/string.mjs'
 import Autocomplete from '../autocomplete/autocomplete.mjs'
-import dom from '../../common/dom'
+import dom from '../../common/dom.js'
 
 function inputConfigBase({ key, value, type = 'text', checked }) {
   const config = {

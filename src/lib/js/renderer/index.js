@@ -1,4 +1,4 @@
-import dom from '../common/dom'
+import dom from '../common/dom.js'
 import { uuid, isAddress, isExternalAddress, merge, cleanFormData } from '../common/utils/index.mjs'
 import { STAGE_CLASSNAME } from '../constants'
 import { fetchDependencies } from '../common/loaders'

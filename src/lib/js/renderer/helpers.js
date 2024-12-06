@@ -1,5 +1,5 @@
 import isEqual from 'lodash/isEqual'
-import dom from '../common/dom'
+import dom from '../common/dom.js'
 import { cleanFormData } from '../common/utils/index.mjs'
 import { ASSIGNMENT_OPERATORS, COMPARISON_OPERATORS, UUID_REGEXP } from '../constants'
 

@@ -58,19 +58,15 @@ export class Controls {
    */
   registerControls(elements) {
     this.controls = []
-    return elements.map(async Element => {
-      const isControl = typeof Element === 'function'
+    return elements.map(Element => {
+      const isControlClass = typeof Element === 'function'
 
-      let control
-      if (isControl) {
-        control = new Element()
-      } else {
-        control = new Control(Element)
-      }
+      const control = isControlClass ? new Element() : new Control(Element)
 
       this.add(control)
       this.controls.push(control.dom)
 
+      // the control may have dependencies so we need to resolve them asynchronously
       return control.promise()
     })
   }

@@ -33,11 +33,11 @@ const animate = {
   slideDown: (elem, duration = 250, cb = false) => {
     elem.style.display = 'block'
     const style = animate.getStyle(elem)
-    const height = parseInt(style.height, 10)
+    const height = Number.parseInt(style.height, 10)
     const increment = height / (duration / 60)
     elem.style.height = '0px'
     ;(function slideDown() {
-      const curHeight = parseFloat(elem.style.height)
+      const curHeight = Number.parseFloat(elem.style.height)
       const val = curHeight + increment
       if (curHeight < height) {
         elem.style.height = val + 'px'
@@ -55,15 +55,15 @@ const animate = {
 
   slideUp: (elem, duration = 250, cb = false) => {
     const style = animate.getStyle(elem)
-    const height = parseInt(style.height)
+    const height = Number.parseInt(style.height)
     const overFlowBack = style.overflow
     elem.style.overflow = 'hidden'
-    elem.style.height = height + 'px'
+    elem.style.height = `${height}px`
     const defMinHeight = style.minHeight
     elem.style.minHeight = 'auto'
     const increment = parseFloat(height / (duration / 60)).toFixed(2)
     ;(function slideUp() {
-      const curHeight = parseInt(elem.style.height, 10)
+      const curHeight = Number.parseInt(elem.style.height, 10)
       const val = curHeight - increment
       if (val > 0) {
         elem.style.height = val + 'px'
@@ -87,17 +87,6 @@ const animate = {
       animate.slideUp(elem, duration)
     }
   },
-
-  // animation.translateX = (distance, duration = 250) => {
-  //   var increment = distance / (duration / 60);
-  //   (function translate() {
-  //     var val = Number(elem.style.opacity) - increment;
-  //     if (val > 0) {
-  //       elem.style.transform = `translate(${distance}px, 0)`;
-  //       requestAnimationFrame(translate);
-  //     }
-  //   })();
-  // }
 }
 
 export default animate

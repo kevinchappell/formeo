@@ -26,7 +26,7 @@ export default class Control {
   }
 
   get controlId() {
-    return this.controlData.meta?.id
+    return this.controlData.meta?.id || this.controlData.config?.controlId
   }
 
   get dom() {

@@ -1,0 +1,80 @@
+exports[`EditPanelItem snapshots > should match attribute item snapshot 1`] = `
+{
+  "itemValues": [
+    [
+      "type",
+      "checkbox"
+    ]
+  ],
+  "field": {
+    "indexName": "mockIndex",
+    "id": "mockId",
+    "shortId": "mockShortId",
+    "config": {
+      "panels": {
+        "mockPanel": {
+          "hideDisabled": true
+        }
+      }
+    }
+  },
+  "itemKey": "attrs.type",
+  "panel": {
+    "name": "mockPanel",
+    "editPanels": {}
+  },
+  "panelName": "mockPanel",
+  "isDisabled": false,
+  "isHidden": false,
+  "isLocked": false,
+  "address": "mockIndex.mockId.attrs.type",
+  "itemSlug": "attrs-type",
+  "itemFieldGroups": [],
+  "dom": {}
+}
+`;
+
+exports[`EditPanelItem snapshots > should match option snapshot 1`] = `
+{
+  "itemValues": [
+    [
+      "checked",
+      false
+    ],
+    [
+      "label",
+      "Checkbox 1"
+    ],
+    [
+      "value",
+      "checkbox-1"
+    ]
+  ],
+  "field": {
+    "indexName": "mockIndex",
+    "id": "mockId",
+    "shortId": "mockShortId",
+    "config": {
+      "panels": {
+        "mockPanel": {
+          "hideDisabled": true
+        }
+      }
+    }
+  },
+  "itemKey": "options[0]",
+  "itemIndex": 0,
+  "panel": {
+    "name": "mockPanel",
+    "editPanels": {}
+  },
+  "panelName": "mockPanel",
+  "isDisabled": false,
+  "isHidden": false,
+  "isLocked": false,
+  "address": "mockIndex.mockId.options[0]",
+  "itemSlug": "options-0",
+  "itemFieldGroups": [],
+  "dom": {}
+}
+`;
