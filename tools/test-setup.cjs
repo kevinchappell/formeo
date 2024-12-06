@@ -1,7 +1,7 @@
 const { snapshot } = require('node:test')
 const { basename, join, dirname } = require('node:path')
 const { JSDOM } = require('jsdom')
-const ResizeObserver = require('./__mocks__/ResizeObserver')
+const { ResizeObserver } = require('./__mocks__/ResizeObserver')
 
 const { window } = new JSDOM('<!DOCTYPE html><p>Hello World</p>', { pretendToBeVisual: true })
 

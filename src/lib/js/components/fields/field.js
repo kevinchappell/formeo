@@ -30,7 +30,7 @@ export default class Field extends Component {
 
     this.label = dom.create(this.labelConfig)
     this.preview = this.fieldPreview()
-    
+
     this.controlId = this.get('config.controlId') || this.get('meta.id')
 
     const actionButtons = this.getActionButtons()

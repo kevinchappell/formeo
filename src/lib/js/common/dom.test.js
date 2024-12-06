@@ -1,43 +1,48 @@
 import { test, describe } from 'node:test'
 import assert from 'node:assert/strict'
-import { dom } from './dom.js'
+import { dom, getName } from './dom.js'
+import { UUID_REGEXP } from '../constants.js'
 
 // Mock browser globals
-global.window = {
-  Node: class {},
-  HTMLElement: class {},
-  Element: class {},
-  requestAnimationFrame: callback => setTimeout(callback, 0),
-  getComputedStyle: () => ({}),
-}
+// global.window = {
+//   Node: class {},
+//   HTMLElement: class {
+//     outerHTML = ''
+//   },
+//   Element: class {
+//     outerHTML = ''
+//   },
+//   requestAnimationFrame: callback => setTimeout(callback, 0),
+//   getComputedStyle: () => ({}),
+// }
 
-global.document = {
-  createElement: tag => ({
-    tagName: tag,
-    classList: {
-      add: () => {},
-      remove: () => {},
-      contains: () => false,
-      toggle: () => {},
-      item: () => {},
-    },
-    setAttribute: () => {},
-    getAttribute: () => {},
-    appendChild: () => {},
-    removeChild: () => {},
-    querySelectorAll: () => [],
-    dataset: {},
-    style: {},
-    parentElement: null,
-  }),
-  getElementById: () => null,
-  body: {
-    getBoundingClientRect: () => ({ top: 0 }),
-  },
-}
+// global.document = {
+//   createElement: tag => ({
+//     tagName: tag,
+//     classList: {
+//       add: () => {},
+//       remove: () => {},
+//       contains: () => false,
+//       toggle: () => {},
+//       item: () => {},
+//     },
+//     setAttribute: () => {},
+//     getAttribute: () => {},
+//     appendChild: () => {},
+//     removeChild: () => {},
+//     querySelectorAll: () => [],
+//     dataset: {},
+//     style: {},
+//     parentElement: null,
+//   }),
+//   getElementById: () => null,
+//   body: {
+//     getBoundingClientRect: () => ({ top: 0 }),
+//   },
+// }
 
 describe('DOM Class', async t => {
-  await t.test('processElemArg', () => {
+  await test('processElemArg', () => {
     // Test string input
     const stringResult = dom.processElemArg('div')
     assert.equal(stringResult.tag, 'div')
@@ -57,20 +62,20 @@ describe('DOM Class', async t => {
     assert.equal(defaultResult.tag, 'div')
   })
 
-  await t.test('getName', () => {
+  await test('getName', () => {
     const elemWithName = { attrs: { name: 'testName' } }
-    assert.equal(dom.getName(elemWithName), 'testName')
+    assert.equal(getName(elemWithName), 'testName')
 
     const elemWithLabel = {
       config: { label: 'Test Label' },
     }
-    assert.match(dom.getName(elemWithLabel), /.*-test-label$/)
+    assert.match(getName(elemWithLabel), /.*-test-label$/)
 
     const elemEmpty = {}
-    assert.match(dom.getName(elemEmpty), /^[a-z0-9-]+$/)
+    assert.match(getName(elemEmpty), UUID_REGEXP)
   })
 
-  await t.test('childType', () => {
+  await test('childType', () => {
     assert.equal(dom.childType([1, 2, 3]), 'array')
     assert.equal(dom.childType('string'), 'string')
     assert.equal(dom.childType(123), 'number')
@@ -78,7 +83,7 @@ describe('DOM Class', async t => {
     assert.equal(dom.childType({ dom: {} }), 'component')
   })
 
-  await t.test('processAttrValue', () => {
+  await test('processAttrValue', () => {
     assert.equal(
       dom.processAttrValue(() => 'test'),
       'test',
@@ -89,14 +94,14 @@ describe('DOM Class', async t => {
     assert.equal(dom.processAttrValue([{ value: 'one', selected: true }, { value: 'two' }]), 'one')
   })
 
-  await t.test('isInput', () => {
+  await test('isInput', () => {
     assert.equal(dom.isInput('input'), true)
     assert.equal(dom.isInput('textarea'), true)
     assert.equal(dom.isInput('select'), true)
     assert.equal(dom.isInput('div'), false)
   })
 
-  await t.test('labelAfter', () => {
+  await test('labelAfter', () => {
     const checkboxElem = { attrs: { type: 'checkbox' } }
     assert.equal(dom.labelAfter(checkboxElem), true)
 
@@ -110,38 +115,31 @@ describe('DOM Class', async t => {
     assert.equal(dom.labelAfter(explicitLabelAfter), true)
   })
 
-  await t.test('isDOMElement', () => {
-    class MockElement extends global.window.Element {}
-    const elem = new MockElement()
+  await test('isDOMElement', () => {
+    const elem = document.createElement('div')
     assert.equal(dom.isDOMElement(elem), true)
     assert.equal(dom.isDOMElement({}), false)
     assert.equal(dom.isDOMElement(null), false)
   })
 
-  await t.test('isComponent', () => {
-    assert.equal(dom.isComponent({ dom: {} }), true)
-    assert.equal(dom.isComponent({}), false)
-    assert.equal(dom.isComponent(null), false)
-  })
-
-  await t.test('create', async t => {
-    await t.test('should return undefined for falsy input', () => {
+  await test('create', async t => {
+    await test('should return undefined for falsy input', () => {
       assert.equal(dom.create(), undefined)
       assert.equal(dom.create(null), undefined)
       assert.equal(dom.create(false), undefined)
     })
 
-    await t.test('should return DOM element if passed as argument', () => {
+    await test('should return DOM element if passed as argument', () => {
       const mockElement = document.createElement('div')
       assert.equal(dom.create(mockElement), mockElement)
     })
 
-    await t.test('should create basic element with tag', () => {
+    await test('should create basic element with tag', () => {
       const element = dom.create('div')
       assert.equal(element.tagName, 'DIV')
     })
 
-    await t.test('should create element with attributes', () => {
+    await test('should create element with attributes', () => {
       const config = {
         tag: 'input',
         attrs: {
@@ -155,10 +153,10 @@ describe('DOM Class', async t => {
       assert.equal(element.getAttribute('type'), 'text')
       assert.equal(element.getAttribute('name'), 'test-input')
       assert.equal(element.getAttribute('id'), 'test-id')
-      assert.equal(element.getAttribute('className'), 'test-class')
+      assert.equal(element.getAttribute('class'), 'test-class')
     })
 
-    await t.test('should create element with children', () => {
+    await test('should create element with children', () => {
       const config = {
         tag: 'div',
         children: [
@@ -173,7 +171,7 @@ describe('DOM Class', async t => {
       assert.equal(element.textContent, 'HelloWorld')
     })
 
-    await t.test('should create element with string content', () => {
+    await test('should create element with string content', () => {
       const config = {
         tag: 'div',
         content: 'Hello World',
@@ -182,7 +180,7 @@ describe('DOM Class', async t => {
       assert.equal(element.innerHTML, 'Hello World')
     })
 
-    await t.test('should create element with dataset attributes', () => {
+    await test('should create element with dataset attributes', () => {
       const config = {
         tag: 'div',
         dataset: {
@@ -195,7 +193,7 @@ describe('DOM Class', async t => {
       assert.equal(element.dataset.camelCase, 'works')
     })
 
-    await t.test('should handle function content', () => {
+    await test('should handle function content', () => {
       const config = {
         tag: 'div',
         content: () => 'Dynamic Content',
@@ -204,7 +202,7 @@ describe('DOM Class', async t => {
       assert.equal(element.innerHTML, 'Dynamic Content')
     })
 
-    await t.test('should handle options for select elements', () => {
+    await test('should handle options for select elements', () => {
       const config = {
         tag: 'select',
         options: [

@@ -49,7 +49,7 @@ export const getName = (elem = {}) => {
     name = `${id}-${slugify(truncateByWord(label, 24, null))}`
   }
 
-  return name
+  return name || id
 }
 
 /**
@@ -266,15 +266,15 @@ class DOM {
   }
 
   onRender = (node, cb, timeout = ANIMATION_SPEED_BASE) => {
-    const start = Date.now();
+    const start = Date.now()
     const checkParent = () => {
       if (!node.parentElement && Date.now() - start < timeout) {
-        window.requestAnimationFrame(checkParent);
+        window.requestAnimationFrame(checkParent)
       } else if (node.parentElement) {
-        cb(node);
+        cb(node)
       }
-    };
-    checkParent();
+    }
+    checkParent()
   }
 
   /**
@@ -484,7 +484,7 @@ class DOM {
    * @return {Array} option config objects
    */
   processOptions(options, elem, isPreview) {
-    const { action, attrs } = elem
+    const { action, attrs = {} } = elem
     const fieldType = attrs.type || elem.tag
     const id = attrs.id || elem.id
 
@@ -514,8 +514,8 @@ class DOM {
           className: [`f-${fieldType}`],
         }
 
-        if (elem.attrs.className) {
-          elem.config.inputWrap = elem.attrs.className
+        if (attrs.className) {
+          elem.config.inputWrap = attrs.className
         }
 
         if (elem.config.inline) {
@@ -915,7 +915,7 @@ class DOM {
     return (
       variable instanceof window.Element ||
       variable instanceof window.HTMLElement ||
-      (variable && typeof variable === 'object' && variable.nodeType === 1 && typeof variable.nodeName === 'string')
+      !!(variable && typeof variable === 'object' && variable.nodeType === 1 && typeof variable.nodeName === 'string')
     )
   }
 }

@@ -1,27 +1,15 @@
 exports[`Field > should have data property matching snapshot 1`] = `
 {
-  "conditions": [
-    {
-      "if": [
-        {
-          "source": "",
-          "sourceProperty": "",
-          "comparison": "",
-          "target": "",
-          "targetProperty": ""
-        }
-      ],
-      "then": [
-        {
-          "target": "",
-          "targetProperty": "",
-          "assignment": "",
-          "value": ""
-        }
-      ]
-    }
-  ],
-  "id": "test-id",
-  "config": {}
+  "tag": "input",
+  "attrs": {
+    "required": false,
+    "type": "text",
+    "className": ""
+  },
+  "config": {
+    "label": "Text Input",
+    "controlId": "text-input"
+  },
+  "id": "1c48584a"
 }
 `;

@@ -1,4 +1,4 @@
-class ResizeObserver {
+export class ResizeObserver {
   observe() {
     // do nothing
   }
