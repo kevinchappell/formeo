@@ -10,6 +10,11 @@
       "import": "./dist/formeo.es.js",
       "require": "./dist/formeo.cjs.js",
       "default": "./dist/formeo.umd.js"
+    },
+    "./dist/formeo.min.css": {
+      "import": "./dist/formeo.min.css",
+      "require": "./dist/formeo.min.css",
+      "default": "./dist/formeo.min.css"
     }
   },
   "files": [
